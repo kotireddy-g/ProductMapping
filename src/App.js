@@ -4,7 +4,8 @@ import FilterPanel from './components/FilterPanel';
 import ProductJourney from './components/ProductJourney';
 import DetailDrawer from './components/DetailDrawer';
 import ProductLabelingPanel from './components/ProductLabelingPanel';
-import { mockRLProducts } from './data/mockData';
+import OverviewTab from './components/OverviewTab';
+import { mockRLProducts, mockProductData } from './data/mockData';
 
 function App() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +49,16 @@ function App() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="flex gap-8">
             <button
+              onClick={() => setActiveTab('overview')}
+              className={`py-4 px-2 font-medium text-sm border-b-2 transition-colors ${
+                activeTab === 'overview'
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              Overview
+            </button>
+            <button
               onClick={() => setActiveTab('journey')}
               className={`py-4 px-2 font-medium text-sm border-b-2 transition-colors ${
                 activeTab === 'journey'
@@ -73,7 +84,9 @@ function App() {
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-6 py-8">
-        {activeTab === 'journey' ? (
+        {activeTab === 'overview' ? (
+          <OverviewTab products={mockProductData} />
+        ) : activeTab === 'journey' ? (
           <>
             {/* Global Search */}
             <div className="mb-8">

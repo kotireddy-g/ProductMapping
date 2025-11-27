@@ -8,7 +8,7 @@ function BouncingBubbles({ product, onBubbleClick }) {
     const timeframes = ['Hourly', 'Daily', 'Weekly', 'Monthly', 'Quarterly', 'Yearly'];
     const newBubbles = timeframes.map((timeframe, index) => {
       const status = Math.random() > 0.5 ? (Math.random() > 0.5 ? 'over' : 'under') : 'normal';
-      const size = 40 + Math.random() * 60; // 40-100px
+      const size = 12 + Math.random() * 6; // 12-18 (uniform, small but visible)
 
       return {
         id: index,
