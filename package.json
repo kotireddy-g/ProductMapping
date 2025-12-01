@@ -1,8 +1,9 @@
 {
-  "name": "procurement-model",
-  "version": "1.0.0",
+  "name": "product-mapping",
+  "version": "0.1.0",
   "description": "Procurement model for hospitality with product labeling using RLHL concept",
   "private": true,
+  "homepage": "/product-mapping",
   "dependencies": {
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
