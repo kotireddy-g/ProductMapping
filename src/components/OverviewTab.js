@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 import { DollarSign, TrendingUp, Package, AlertCircle, Zap, Clock, TrendingDown, Flame, Droplet, BarChart3, Info, Search, X, Calendar, BarChart, TrendingUp as TrendUp } from 'lucide-react';
 
-const OverviewTab = () => {
+const OverviewTab = ({ products, verticalConfig, selectedVertical }) => {
   const svgRef = useRef();
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedItem, setSelectedItem] = useState(null);
@@ -12,98 +12,11 @@ const OverviewTab = () => {
   const [showGuide, setShowGuide] = useState(false);
   const [productSearchQuery, setProductSearchQuery] = useState('');
 
-  // Enhanced product data with cross-location tracking and timeframe-based metrics
-  const productData = {
-    'Kitchen': {
-      products: [
-        { 
-          name: 'Fresh Fish', category: 'fast', flow: 45, cost: 5000, revenue: 15000, margin: 67, status: 'normal', expiryDays: 3, consumption: 'normal',
-          locations: { 'Downtown Hotel': { status: 'normal', flow: 25 }, 'Beach Resort': { status: 'over-consumed', flow: 35 }, 'Airport Restaurant': { status: 'normal', flow: 20 } },
-          timeframes: { hourly: 2, daily: 45, weekly: 315, monthly: 1350, quarterly: 4050, yearly: 16425 }
-        },
-        { 
-          name: 'Premium Beef', category: 'fast', flow: 38, cost: 12000, revenue: 35000, margin: 66, status: 'over-consumed', expiryDays: 2, consumption: 'high',
-          locations: { 'Fine Dining': { status: 'over-consumed', flow: 45 }, 'Downtown Hotel': { status: 'normal', flow: 30 }, 'Suburban Hotel': { status: 'under-consumed', flow: 15 } },
-          timeframes: { hourly: 1.6, daily: 38, weekly: 266, monthly: 1140, quarterly: 3420, yearly: 13870 }
-        },
-        { 
-          name: 'Organic Vegetables', category: 'fast', flow: 42, cost: 3000, revenue: 9000, margin: 67, status: 'expiry-near', expiryDays: 1, consumption: 'normal',
-          locations: { 'City Center Cafe': { status: 'expiry-near', flow: 50 }, 'Beach Resort': { status: 'normal', flow: 35 }, 'Fast Casual': { status: 'normal', flow: 40 } },
-          timeframes: { hourly: 1.8, daily: 42, weekly: 294, monthly: 1260, quarterly: 3780, yearly: 15330 }
-        },
-        { 
-          name: 'Imported Seafood', category: 'medium', flow: 15, cost: 8000, revenue: 22000, margin: 64, status: 'normal', expiryDays: 1, consumption: 'normal',
-          locations: { 'Fine Dining': { status: 'normal', flow: 20 }, 'Rooftop Bar': { status: 'under-consumed', flow: 10 }, 'Downtown Hotel': { status: 'normal', flow: 15 } },
-          timeframes: { hourly: 0.6, daily: 15, weekly: 105, monthly: 450, quarterly: 1350, yearly: 5475 }
-        },
-        { 
-          name: 'Artisan Spices', category: 'slow', flow: 8, cost: 500, revenue: 1500, margin: 67, status: 'under-consumed', expiryDays: 180, consumption: 'low',
-          locations: { 'Fine Dining': { status: 'normal', flow: 12 }, 'Downtown Hotel': { status: 'under-consumed', flow: 5 }, 'Beach Resort': { status: 'dead-stock', flow: 2 } },
-          timeframes: { hourly: 0.3, daily: 8, weekly: 56, monthly: 240, quarterly: 720, yearly: 2920 }
-        },
-        { 
-          name: 'Truffle Oil', category: 'occasional', flow: 3, cost: 800, revenue: 2400, margin: 67, status: 'dead-stock', expiryDays: 90, consumption: 'minimal',
-          locations: { 'Fine Dining': { status: 'occasional', flow: 5 }, 'Downtown Hotel': { status: 'dead-stock', flow: 1 }, 'Rooftop Bar': { status: 'dead-stock', flow: 1 } },
-          timeframes: { hourly: 0.1, daily: 3, weekly: 21, monthly: 90, quarterly: 270, yearly: 1095 }
-        }
-      ]
-    },
-    'Bar': {
-      products: [
-        { 
-          name: 'Premium Wine', category: 'fast', flow: 50, cost: 8000, revenue: 28000, margin: 71, status: 'normal', expiryDays: 365, consumption: 'high',
-          locations: { 'Rooftop Bar': { status: 'normal', flow: 60 }, 'Fine Dining': { status: 'over-consumed', flow: 75 }, 'Downtown Hotel': { status: 'normal', flow: 45 } },
-          timeframes: { hourly: 2.1, daily: 50, weekly: 350, monthly: 1500, quarterly: 4500, yearly: 18250 }
-        },
-        { 
-          name: 'Craft Spirits', category: 'fast', flow: 35, cost: 15000, revenue: 55000, margin: 73, status: 'normal', expiryDays: 365, consumption: 'high',
-          locations: { 'Rooftop Bar': { status: 'over-consumed', flow: 50 }, 'Fine Dining': { status: 'normal', flow: 35 }, 'Beach Resort': { status: 'under-consumed', flow: 20 } },
-          timeframes: { hourly: 1.5, daily: 35, weekly: 245, monthly: 1050, quarterly: 3150, yearly: 12775 }
-        },
-        { 
-          name: 'Fresh Garnishes', category: 'medium', flow: 12, cost: 600, revenue: 2400, margin: 75, status: 'expiry-near', expiryDays: 2, consumption: 'normal',
-          locations: { 'Rooftop Bar': { status: 'expiry-near', flow: 15 }, 'Fine Dining': { status: 'normal', flow: 12 }, 'Downtown Hotel': { status: 'under-consumed', flow: 8 } },
-          timeframes: { hourly: 0.5, daily: 12, weekly: 84, monthly: 360, quarterly: 1080, yearly: 4380 }
-        }
-      ]
-    },
-    'Restaurant': {
-      products: [
-        { name: 'Table Linens', category: 'fast', flow: 30, cost: 2000, revenue: 0, margin: 0, status: 'normal', expiryDays: 365, consumption: 'normal' },
-        { name: 'Disposables', category: 'fast', flow: 45, cost: 1500, revenue: 0, margin: 0, status: 'over-consumed', expiryDays: 365, consumption: 'high' },
-        { name: 'Condiments', category: 'medium', flow: 18, cost: 800, revenue: 0, margin: 0, status: 'normal', expiryDays: 60, consumption: 'normal' },
-        { name: 'Serving Ware', category: 'slow', flow: 5, cost: 3000, revenue: 0, margin: 0, status: 'under-consumed', expiryDays: 365, consumption: 'low' },
-        { name: 'Decorative Items', category: 'occasional', flow: 2, cost: 1000, revenue: 0, margin: 0, status: 'dead-stock', expiryDays: 365, consumption: 'minimal' }
-      ]
-    },
-    'Room Service': {
-      products: [
-        { name: 'Breakfast Items', category: 'fast', flow: 35, cost: 4000, revenue: 14000, margin: 71, status: 'normal', expiryDays: 3, consumption: 'normal' },
-        { name: 'Minibar Stock', category: 'fast', flow: 28, cost: 3000, revenue: 12000, margin: 75, status: 'expiry-near', expiryDays: 5, consumption: 'normal' },
-        { name: 'Amenities', category: 'medium', flow: 20, cost: 2500, revenue: 0, margin: 0, status: 'normal', expiryDays: 365, consumption: 'normal' },
-        { name: 'Special Requests', category: 'slow', flow: 8, cost: 1200, revenue: 5000, margin: 76, status: 'under-consumed', expiryDays: 90, consumption: 'low' },
-        { name: 'VIP Packages', category: 'occasional', flow: 3, cost: 2000, revenue: 10000, margin: 80, status: 'dead-stock', expiryDays: 365, consumption: 'minimal' }
-      ]
-    },
-    'Banquet': {
-      products: [
-        { name: 'Buffet Supplies', category: 'fast', flow: 25, cost: 5000, revenue: 20000, margin: 75, status: 'normal', expiryDays: 7, consumption: 'normal' },
-        { name: 'Event Beverages', category: 'fast', flow: 30, cost: 4000, revenue: 16000, margin: 75, status: 'normal', expiryDays: 365, consumption: 'normal' },
-        { name: 'Decoration Materials', category: 'medium', flow: 10, cost: 3000, revenue: 12000, margin: 75, status: 'normal', expiryDays: 365, consumption: 'normal' },
-        { name: 'Audio-Visual Equipment', category: 'slow', flow: 5, cost: 8000, revenue: 0, margin: 0, status: 'under-consumed', expiryDays: 365, consumption: 'low' },
-        { name: 'Themed Event Items', category: 'occasional', flow: 3, cost: 2000, revenue: 8000, margin: 75, status: 'dead-stock', expiryDays: 180, consumption: 'minimal' }
-      ]
-    },
-    'Storage': {
-      products: [
-        { name: 'Dry Goods', category: 'fast', flow: 40, cost: 6000, revenue: 0, margin: 0, status: 'normal', expiryDays: 180, consumption: 'normal' },
-        { name: 'Frozen Items', category: 'fast', flow: 35, cost: 7000, revenue: 0, margin: 0, status: 'over-consumed', expiryDays: 30, consumption: 'high' },
-        { name: 'Cleaning Supplies', category: 'medium', flow: 15, cost: 2000, revenue: 0, margin: 0, status: 'normal', expiryDays: 365, consumption: 'normal' },
-        { name: 'Seasonal Stock', category: 'slow', flow: 6, cost: 4000, revenue: 0, margin: 0, status: 'under-consumed', expiryDays: 120, consumption: 'low' },
-        { name: 'Emergency Reserves', category: 'occasional', flow: 2, cost: 3000, revenue: 0, margin: 0, status: 'dead-stock', expiryDays: 365, consumption: 'minimal' }
-      ]
-    }
-  };
+  // Use vertical-specific data
+  const productData = products || {};
+  
+  // Get vertical-specific departments
+  const departments = verticalConfig?.departments || ['Kitchen', 'Bar', 'Restaurant', 'Room Service', 'Banquet', 'Storage'];
 
   const getCategoryStats = () => {
     let fast = 0, medium = 0, slow = 0, occasional = 0;
@@ -271,7 +184,6 @@ const OverviewTab = () => {
   const highlightProductInChart = (productName) => {
     const svg = d3.select(svgRef.current);
     const productDepartments = getProductDepartments(productName);
-    const departmentNames = ['Kitchen', 'Bar', 'Restaurant', 'Room Service', 'Banquet', 'Storage'];
     
     if (productName && productDepartments.length > 0) {
       // Dim all elements first
@@ -281,7 +193,7 @@ const OverviewTab = () => {
       
       // Highlight departments that have this product
       productDepartments.forEach(dept => {
-        const deptIndex = departmentNames.indexOf(dept);
+        const deptIndex = departments.indexOf(dept);
         if (deptIndex !== -1) {
           svg.selectAll('.department-arc').filter((d, i) => i === deptIndex)
             .attr('opacity', 1)
@@ -297,8 +209,8 @@ const OverviewTab = () => {
       
       // Highlight ribbons between departments that have this product
       svg.selectAll('.ribbon').filter(d => {
-        const sourceDept = departmentNames[d.source.index];
-        const targetDept = departmentNames[d.target.index];
+        const sourceDept = departments[d.source.index];
+        const targetDept = departments[d.target.index];
         return productDepartments.includes(sourceDept) && productDepartments.includes(targetDept);
       }).attr('opacity', 0.8)
         .attr('stroke', '#ff6b6b')
@@ -324,7 +236,6 @@ const OverviewTab = () => {
     const currentData = getTimeframeAdjustedData(baseData);
     
     // Calculate flow matrix from filtered products
-    const departments = ['Kitchen', 'Bar', 'Restaurant', 'Room Service', 'Banquet', 'Storage'];
     const matrix = departments.map((dept, i) => {
       return departments.map((targetDept, j) => {
         if (i === j) return 0;

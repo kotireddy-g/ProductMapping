@@ -1,9 +1,9 @@
 #!/bin/bash
 
-# ProductMapping Deployment Script
-# Based on your previous epa-project deployment pattern
+# ExperienceFlow Multi-Vertical Procurement Platform Deployment Script
+# Supports: Hospitality, Supermarket, Hospital Pharma
 
-echo "🚀 Starting ProductMapping deployment..."
+echo "🚀 Starting ExperienceFlow deployment..."
 
 # Clean previous build
 echo "🧹 Cleaning previous build..."
@@ -56,10 +56,17 @@ echo ""
 echo "🎉 Deployment Complete!"
 echo "✅ Visit: http://192.168.1.111/product-mapping/"
 echo ""
-echo "📊 Your ProductMapping dashboard is now live with:"
+echo "🏢 ExperienceFlow Multi-Vertical Platform is now live with:"
+echo "   🏨 Hospitality: Hotels, Restaurants & Food Service"
+echo "   🛒 Supermarket: Retail Chains & Grocery Stores"  
+echo "   🏥 Hospital Pharma: Hospitals & Pharmaceutical Supply"
+echo ""
+echo "✨ Features:"
+echo "   • Multi-vertical procurement intelligence"
 echo "   • Interactive chord diagram visualization"
-echo "   • Critical insights panel"
-echo "   • Product flow tracking"
-echo "   • Cross-location analysis"
-echo "   • Executive-ready tooltips"
+echo "   • Critical insights panel with immediate actions"
+echo "   • Product flow tracking across departments"
+echo "   • Cross-location analysis and comparison"
+echo "   • Executive-ready tooltips and guidance"
+echo "   • RLHF (Reinforcement Learning Human Feedback) labeling"
 echo ""

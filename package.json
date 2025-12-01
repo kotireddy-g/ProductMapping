@@ -1,7 +1,7 @@
 {
-  "name": "product-mapping",
-  "version": "0.1.0",
-  "description": "Procurement model for hospitality with product labeling using RLHL concept",
+  "name": "experienceflow-procurement",
+  "version": "2.0.0",
+  "description": "ExperienceFlow Multi-Vertical Procurement Intelligence Platform supporting Hospitality, Supermarket, and Hospital Pharma with RLHF",
   "private": true,
   "homepage": "/product-mapping",
   "dependencies": {
