@@ -1,40 +1,52 @@
-# ExperienceFlow Multi-Vertical Procurement Intelligence Platform
+# Hospital Pharma Procurement Intelligence Platform
 
 ## Project Overview
-ExperienceFlow is a comprehensive procurement management system supporting multiple verticals including Hospitality, Supermarket, and Hospital Pharma sectors. The platform features product labeling using Reinforcement Learning concepts and provides detailed procurement analytics with an interactive hierarchical bipartite chord diagram for product flow visualization.
+A specialized procurement intelligence platform for Hospital Pharmacy operations. The platform features authentication, pharmacy-specific KPIs, interactive chord diagram visualization for product flow analysis, real-time circuit flow animation for medicine distribution tracking, and comprehensive synthetic data for analytics.
 
 ## Project Type
 - **Framework**: React 18 with Create React App
 - **Build Tool**: react-scripts (webpack-based)
 - **Styling**: Tailwind CSS
-- **Visualization**: Recharts, D3.js (bipartite chord diagram)
+- **Visualization**: Recharts, D3.js (chord diagram, circuit flow animation)
 - **Icons**: Lucide React
 
 ## Current State
 - **Status**: Fully configured and running in Replit environment
 - **Last Updated**: December 2, 2025
 - **Environment**: Development server running on port 5000
+- **Authentication**: Implemented (Login/Signup with form validation)
 
 ## Project Structure
 ```
 src/
-├── components/          # React components
-│   ├── BipartiteChord.js    # D3-based hierarchical chord diagram with drill-down
-│   ├── DetailDrawer.js
-│   ├── FilterPanel.js
-│   ├── OverviewTab.js       # Main overview with flow visualization
-│   ├── PerformanceMetrics.js
-│   ├── ProductJourney.js
-│   ├── ProductLabelingPanel.js
-│   └── SearchBar.js
-├── data/               # Mock data and synthetic data
-│   ├── hierarchicalData.js  # 5-level hierarchical product data with flows
-│   ├── mockData.js
-│   ├── syntheticChordData.js
-│   └── verticalData.js
-├── App.js             # Main application component (single-page layout)
-├── index.css          # Global styles with Tailwind
-└── index.js           # Entry point
+├── components/
+│   ├── Auth/                    # Authentication components
+│   │   ├── Login.js            # Login page with form validation
+│   │   └── Signup.js           # Signup page with password requirements
+│   ├── Overview/               # Overview tab components
+│   │   ├── TopStats.js         # Top KPI stat cards (OTIF, Expiry, etc.)
+│   │   ├── PharmaChodDiagram.js # D3 chord diagram with dynamic filters
+│   │   ├── ConsumptionStats.js  # Consumption statistics cards
+│   │   └── KPISection.js       # Sparkline KPI graphs
+│   ├── ProductJourney/         # Product Journey tab components
+│   │   └── LiveCircuitFlow.js  # Real-time D3 circuit flow animation
+│   ├── BipartiteChord.js       # Legacy chord diagram
+│   ├── DetailDrawer.js         # Product detail drawer
+│   ├── FilterPanel.js          # Filter panel
+│   ├── OverviewTab.js          # Main overview tab container
+│   ├── PerformanceMetrics.js   # Performance metrics display
+│   ├── ProductJourney.js       # Product journey container
+│   ├── ProductLabelingPanel.js # RL-based product labeling
+│   └── SearchBar.js            # Search functionality
+├── data/
+│   ├── pharmaChordData.js      # Pharmacy-specific chord diagram data
+│   ├── hierarchicalData.js     # Hierarchical product data
+│   ├── mockData.js             # General mock data
+│   ├── syntheticChordData.js   # Synthetic data generators
+│   └── verticalData.js         # Vertical-specific data (Hospital Pharma)
+├── App.js                      # Main app with auth gating
+├── index.css                   # Global Tailwind styles
+└── index.js                    # Entry point
 ```
 
 ## Configuration
@@ -64,34 +76,44 @@ src/
 - **Homepage**: /product-mapping
 
 ## Features
-1. **Single-Page Layout**: Three section buttons (Overview, Product Journey, Product Labeling)
-2. **Bipartite Chord Diagram**: Interactive D3.js visualization showing product flows between categories and locations
-   - Color coding: Green (fast), Yellow (medium), Orange (slow), Red (occasional)
-   - Ribbon width: Based on consumption level (over, normal, under)
-   - 5-level drill-down: Category → Subcategory → Type → Brand → Product
-   - Breadcrumb navigation for easy backtracking
-3. **Product Journey Tab**: Track product consumption with performance metrics
-4. **Product Labeling (RL)**: Review and manage products labeled by Reinforcement Learning
-5. **Detail Drawer**: Comprehensive product analysis with trend charts
 
-## Hierarchical Data Structure
-The bipartite chord diagram uses a hierarchical data structure:
-- **Categories**: Top-level product categories (Fresh Produce, Dairy, etc.)
-- **Subcategories**: Groupings within categories (Vegetables, Fruits, etc.)
-- **Types**: Specific types (Leafy Greens, Root Vegetables, etc.)
-- **Brands**: Product brands (Farm Fresh, Green Garden, etc.)
-- **Products**: Individual products (Organic Lettuce, Spinach, etc.)
+### Authentication
+- Login and Signup pages with form validation
+- Password strength requirements
+- Session management via app-level state
 
-Each level has:
-- `connectedAreas`: Array of area IDs this item connects to
-- `areaFlows`: Object mapping area IDs to { volume, consumption } data
-- `movement`: Speed indicator (fast, medium, slow, occasional)
-- `consumption`: Level indicator (over, normal, under)
+### Overview Tab
+1. **Top KPI Stats**: Stock Turnover Rate, Critical Stock Items, Expiry Alerts, Stock Rotation Score
+2. **Chord Diagram**: Interactive D3.js visualization showing medicine flows
+   - Dynamic filters: Areas (A-F), Specialities (12 options), Wards (multiple)
+   - Color-coded ribbons based on movement speed
+   - Width indicates consumption level
+3. **Consumption Stats**: Over Consumption (urgent), Normal, Under Consumption
+4. **KPI Section**: Sparkline graphs for OTIF, Cost Saving, Expiry Duration, Emergency Purchase Rate
 
-## Supported Verticals
-1. **Hospitality**: Hotels, restaurants, catering (with complete hierarchical data)
-2. **Supermarket**: Retail grocery operations
-3. **Hospital Pharma**: Hospital pharmaceutical procurement
+### Product Journey Tab
+- **Live Circuit Flow**: Real-time D3 animation showing medicine distribution
+- Source → Distribution Centers → Consumption Points
+- Animated flowing particles showing medicine movement
+- Dynamic stock level updates
+- Product selection (Paracetamol, Insulin, Amoxicillin, Metformin)
+
+### Product Labeling (RL)
+- Review and manage products labeled by Reinforcement Learning
+- Accept/Reject/Skip actions
+
+### Timeframe Filter
+- Date range selector: Today, Yesterday, 7 Days, 30 Days, 90 Days, 12 Months
+- Integrated across all analytics components
+
+## Data Structure
+Pharmacy-specific hierarchical data:
+- **Drug Categories**: Cardiovascular, Pain Management, Antibiotics, etc.
+- **Subcategories**: Beta Blockers, Statins, NSAIDs, etc.
+- **Types**: Generic, Branded medications
+- **Areas**: Hospital zones (A-F)
+- **Specialities**: Cardiology, Oncology, Neurology, etc.
+- **Wards**: Multiple ward locations per speciality
 
 ## Dependencies
 - React 18.2.0
@@ -102,14 +124,14 @@ Each level has:
 - Lucide React 0.263.1
 
 ## Recent Changes
-- December 2, 2025: UI Redesign
-  - Implemented single-page layout with section buttons
-  - Created BipartiteChord component with D3.js for product flow visualization
-  - Added hierarchical data structure with 5-level drill-down capability
-  - Color-coded ribbons for movement speed visualization
-  - Width-coded ribbons for consumption level indication
-  - Breadcrumb navigation for drill-down paths
-  - Interactive guide/tooltip explaining chart usage
+- December 2, 2025: Hospital Pharma Platform Transformation
+  - Implemented authentication flow with Login/Signup pages
+  - Removed multi-vertical selector; now Hospital Pharma only
+  - Created Overview tab with pharmacy-specific KPIs
+  - Built interactive chord diagram with dynamic Area/Speciality/Ward filters
+  - Added sparkline KPI graphs for OTIF, Cost Saving, Expiry Duration
+  - Implemented Live Circuit Flow animation for Product Journey
+  - Generated comprehensive synthetic pharma data
   - Fixed all ESLint warnings
 
 - December 2, 2025: Initial Replit environment setup
@@ -129,5 +151,5 @@ Each level has:
 - Mock data is used throughout (no backend/API integration)
 - State management is handled via React hooks (no Redux)
 - Tailwind CSS with PostCSS for styling
-- D3 used for bipartite chord diagrams with hierarchical drill-down
-- Recharts for other visualizations
+- D3 used for chord diagram and circuit flow animations
+- Recharts for sparkline KPI visualizations
