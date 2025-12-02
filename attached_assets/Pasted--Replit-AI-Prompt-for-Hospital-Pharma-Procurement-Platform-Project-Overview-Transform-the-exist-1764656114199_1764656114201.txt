@@ -1,0 +1,426 @@
+# Replit AI Prompt for Hospital Pharma Procurement Platform
+
+## Project Overview
+Transform the existing ExperienceFlow multi-vertical procurement platform into a Hospital Pharma-focused application with login/signup flows, redesigned Overview tab with pharmacy-specific KPIs, and an animated live circuit flow visualization for Product Journey.
+
+## 1. Authentication Flow
+
+### Requirements:
+- Create a login page with email and password fields
+- Create a signup page with name, email, password, and confirm password fields
+- Add validation for:
+  - Required fields (show red border and error message)
+  - Email format validation
+  - Password minimum 8 characters
+  - Confirm password match
+  - Display validation errors below each field
+- Add "Forgot Password?" link on login page (no functionality needed)
+- Add "Already have an account? Login" / "Don't have an account? Sign up" toggle
+- Use modern, clean UI with gradient backgrounds similar to existing dashboard
+- On successful login/signup, navigate to main dashboard
+- Store auth state in React state (no API integration needed yet)
+
+### UI Design:
+- Center-aligned card with white background and shadow
+- ExperienceFlow logo and "Hospital Pharma" subtitle at top
+- Blue gradient buttons matching dashboard theme
+- Smooth transitions and hover effects
+
+## 2. Remove Vertical Dropdown
+
+### Requirements:
+- Remove the vertical selector dropdown from the header
+- Update header to show only "ExperienceFlow" title with "Hospital Pharma Procurement" subtitle
+- Remove all references to hospitality and supermarket verticals
+- Keep only pharma data throughout the application
+- Update all components to use only `pharmaData` from verticalData.js
+
+## 3. Overview Tab - Top Stats Redesign
+
+### Requirements:
+Replace the existing 4 stats cards with new pharmacy-specific metrics:
+
+1. **OTIF (On Time, In Full)**: 
+   - Display percentage (e.g., 87%)
+   - Show baseline comparison: "Baseline: 55% | Goal: 95%"
+   - Color: Blue gradient
+   - Icon: Clock/Check icon
+
+2. **Expiry Rate**:
+   - Display percentage (e.g., 3.2%)
+   - Show baseline: "Baseline: 5% | Goal: 1%"
+   - Color: Orange gradient
+   - Icon: Calendar/Alert icon
+
+3. **Over Consumption**:
+   - Display percentage (e.g., 12%)
+   - Show baseline: "Baseline: 15% | Goal: 8%"
+   - Color: Red gradient
+   - Icon: TrendingUp icon
+
+4. **Wastage Rate**:
+   - Display percentage (e.g., 2.8%)
+   - Show baseline: "Baseline: 4% | Goal: 1%"
+   - Color: Purple gradient
+   - Icon: Trash/X icon
+
+### Design:
+- Keep the 4-column grid layout
+- Add small up/down arrow icons to show improvement/decline vs baseline
+- Add subtle animation on hover
+
+## 4. Product Flow Analysis Redesign - CHORD DIAGRAM STYLE
+
+### CRITICAL: Visual Style Reference
+The graph MUST look like the attached image showing a **chord diagram** with:
+- **Curved arc segments** on left and right sides forming a circular/semi-circular layout
+- **Flowing ribbon connections** between left and right arcs (NOT straight lines)
+- **Gradient-filled ribbons** that curve smoothly through the center
+- **Color-coded segments** on both sides matching their connections
+- **Elegant, modern aesthetic** with smooth curves and professional appearance
+
+### Implementation Details:
+
+#### Left Side - Fixed Pharmacy Categories:
+Display as curved arc segments (like chord diagram) with labels:
+1. Emergency Medicines (position 1)
+2. OT Medicines (position 2)
+3. Ward Medicines (position 3)
+4. Daycare Medicines (position 4)
+5. General Medicines (position 5)
+6. Implant Medicines (position 6)
+
+**No drill-down functionality** - these remain static and fixed.
+
+#### Right Side - Dynamic Arc Segments with Dropdown Filter:
+Add a prominent dropdown filter above the visualization with options:
+- **Areas** (default) - ICU, Emergency Ward, General Ward, OT, Pharmacy Store, etc.
+- **Specialities** - Cardiology, Neurology, Orthopedics, Pediatrics, Oncology, etc.
+- **Wards** - ICU Ward, Emergency Ward, General Ward, Private Rooms, etc.
+
+Display 6-8 arc segments on the right side based on selected filter.
+
+#### Chord/Ribbon Visualization:
+- Use **D3.js chord diagram** or similar curved ribbon library
+- **Smooth Bezier curves** connecting left arcs to right arcs
+- **Ribbon width** proportional to flow volume/consumption
+- **Gradient colors** flowing from source to destination
+- **Opacity** based on consumption level (over/normal/under)
+- **Hover effects**: Highlight selected ribbon and connected segments
+- **Click interaction**: Show detailed flow statistics in tooltip
+
+#### Color Scheme:
+- **Emergency Medicines**: Red/Pink gradient
+- **OT Medicines**: Purple gradient
+- **Ward Medicines**: Blue gradient
+- **Daycare Medicines**: Cyan gradient
+- **General Medicines**: Green gradient
+- **Implant Medicines**: Orange gradient
+
+#### Ribbon Color Coding by Status:
+- **Over-Consumption**: Thicker ribbons with red tint overlay
+- **Normal**: Standard thickness with source color gradient
+- **Under-Consumption**: Thinner ribbons with yellow tint
+- **Dead Stock**: Very thin ribbons with gray overlay
+
+### Legend Relocation:
+- Move **"Movement Speed"** legend to **top-left** of chart area with color indicators
+- Move **"Consumption Status"** indicators to **top-right** of chart area
+- Remove all bottom legends completely
+- Add **"Flow Volume"** scale indicator showing ribbon thickness meaning
+
+### Bottom Stats (Replace Current Bottom Stats):
+Show 4 KPI cards in a row below the chord diagram:
+1. **Over-Consumption**: 
+   - Count (e.g., 12 items)
+   - Percentage (e.g., 15%)
+   - Red badge with alert icon
+   
+2. **Under-Consumption**: 
+   - Count (e.g., 8 items)
+   - Percentage (e.g., 10%)
+   - Yellow badge with warning icon
+   
+3. **Dead Stock**: 
+   - Count (e.g., 5 items)
+   - Percentage (e.g., 6%)
+   - Gray badge with X icon
+   
+4. **Expiry Near** (< 30 days): 
+   - Count (e.g., 7 items)
+   - Percentage (e.g., 9%)
+   - Orange badge with clock icon
+
+### Technical Requirements for Chord Diagram:
+```javascript
+// Use D3.js chord layout or create custom curved paths
+// Example structure:
+- Left arc segments: 6 fixed medicine categories
+- Right arc segments: 6-8 dynamic (areas/specialities/wards)
+- Ribbons: Bezier curves with quadratic/cubic interpolation
+- Data structure: Matrix format [leftIndex][rightIndex] = flowVolume
+```
+
+## 5. New KPI Section with Graphs
+
+### Requirements:
+Add a new section below Product Flow Analysis showing 4 KPIs with mini line charts:
+
+1. **OTIF (On Time, In Full)**
+   - Goal: 95%
+   - Baseline: 55%
+   - Current: Calculate from synthetic data
+   - Show 7-day trend line chart
+   - Color: Blue
+
+2. **Procurement Cost Saving**
+   - Goal: 5%
+   - Baseline: 0%
+   - Current: Calculate from synthetic data
+   - Show 7-day trend line chart
+   - Color: Green
+
+3. **Expiry Duration Rate**
+   - Goal: 1%
+   - Baseline: 3%
+   - Current: Calculate from synthetic data
+   - Show 7-day trend line chart
+   - Color: Orange
+
+4. **Emergency Purchase Rate**
+   - Goal: 5%
+   - Baseline: 12%
+   - Current: Calculate from synthetic data
+   - Show 7-day trend line chart
+   - Color: Red
+
+### Design:
+- Use Recharts LineChart for trend visualization
+- Show goal line as dashed horizontal line
+- Display current value prominently with comparison to goal
+- Add percentage change indicator (up/down arrow with percentage)
+- Responsive grid layout (2x2 on desktop, stack on mobile)
+- Each card shows: Current value (large), Goal, Baseline, 7-day sparkline
+
+## 6. Timeframe Filter Integration
+
+### Requirements:
+- When user changes timeframe (Hourly/Daily/Weekly/Monthly/Quarterly/Yearly), update:
+  - Top 4 stats (OTIF, Expiry, Over Consumption, Wastage)
+  - Chord diagram flow volumes and connections
+  - Bottom 4 consumption stats
+  - All 4 KPI graphs with historical data
+- Generate comprehensive synthetic data for all timeframes
+- Ensure data is consistent and realistic across all components
+- Add smooth transition animations when switching timeframes
+- Animate ribbon thickness changes in chord diagram
+
+## 7. Product Journey Tab - Live Circuit Flow
+
+### Requirements:
+Create an impressive animated tree/circuit visualization:
+
+### Layout:
+- **Left**: Main product node (large circle) showing:
+  - Medicine name (e.g., "Cardiac Medications")
+  - Allocated Quantity (e.g., "1,500 units")
+  - Real-time counter animation
+  
+- **Middle**: Flow branches to 4-6 intermediate nodes showing:
+  - Distribution channels (Emergency, ICU, General Ward, etc.)
+  - Current stock at each location
+  - Animated flow lines showing quantity movement
+  - Color-coded by status (green: normal, yellow: low, red: critical)
+
+- **Right**: End nodes showing:
+  - Consumption points
+  - Current consumption rate
+  - Stock level indicators
+
+### Animation Features:
+- **Particle Flow**: Animated dots/particles flowing from left to right along connection lines
+- **Pulse Effect**: Nodes pulse with different speeds based on urgency
+- **Real-time Updates**: Numbers increment/decrement smoothly every 2-3 seconds
+- **Color Transitions**: Smooth color changes based on stock levels
+- **Glow Effects**: Nodes glow when critically low or over-stocked
+
+### Interactivity:
+- Click on main product node → Open DetailDrawer with comprehensive analytics
+- Hover on any node → Show tooltip with detailed stats
+- Hover on connection lines → Highlight path and show flow rate
+- Smooth zoom and pan functionality
+
+### Visual Design:
+- Use SVG for crisp rendering
+- Circuit board aesthetic with connecting lines
+- Neon/glow effects for "live" feeling
+- Dark background with bright nodes for contrast
+- Use D3.js for complex animations
+
+### Data Simulation:
+- Create realistic quantity fluctuation algorithms
+- Simulate emergency scenarios with rapid stock depletion
+- Show restocking events with quantity increases
+- Generate alerts for critical levels
+
+## 8. Synthetic Data Requirements
+
+### Generate comprehensive data for:
+1. **Medicine Types**: 50+ medicines across 6 categories
+2. **Areas**: 8-10 hospital areas (ICU, Emergency, General Ward, OT, etc.)
+3. **Specialities**: 10-12 specialities (Cardiology, Neurology, etc.)
+4. **Wards**: 8-10 wards with different consumption patterns
+5. **Time-series Data**: Hourly to yearly data for all KPIs
+6. **Flow Data**: Matrix data for chord diagram showing connections between medicines and locations
+7. **Stock Levels**: Fluctuating quantities with realistic patterns
+8. **OTIF Data**: Delivery performance metrics
+9. **Cost Data**: Procurement costs and savings
+10. **Expiry Data**: Medicines nearing expiry with dates
+
+### Chord Diagram Specific Data:
+```javascript
+// Create matrix data structure
+const flowMatrix = [
+  // Each row = medicine category (Emergency, OT, Ward, Daycare, General, Implant)
+  // Each column = destination (Areas/Specialities/Wards based on filter)
+  [150, 200, 180, 120, 90, 110, 80, 70],  // Emergency Medicines flow
+  [80, 120, 90, 200, 60, 70, 50, 40],     // OT Medicines flow
+  // ... etc
+];
+```
+
+### Data Characteristics:
+- Realistic correlations (e.g., emergency medicines have higher flow to ICU)
+- Seasonal patterns (e.g., flu medications peak in winter months)
+- Random variations within realistic bounds
+- Emergency scenarios with spike patterns
+- Cost optimization trends over time
+- Flow volumes that make visual sense in chord diagram
+
+## 9. Technical Requirements
+
+### Dependencies:
+- Keep existing: React, D3.js, Recharts, Lucide React, Tailwind CSS
+- Add if needed: react-router-dom for navigation
+- Use D3 chord layout: `d3.chord()` and `d3.ribbon()` functions
+
+### File Structure:
+```
+src/
+├── components/
+│   ├── Auth/
+│   │   ├── Login.js
+│   │   └── Signup.js
+│   ├── Overview/
+│   │   ├── TopStats.js
+│   │   ├── ChordDiagram.js (NEW - replaces BipartiteChord)
+│   │   ├── KPISection.js
+│   │   └── ConsumptionStats.js
+│   ├── ProductJourney/
+│   │   └── LiveCircuitFlow.js
+│   └── [existing components]
+├── data/
+│   ├── pharmaData.js (enhanced)
+│   ├── chordData.js (NEW - matrix data for chord diagram)
+│   └── syntheticData.js (new)
+├── utils/
+│   └── dataSimulation.js (new)
+└── App.js (updated routing)
+```
+
+### Chord Diagram Implementation Guide:
+```javascript
+// Use D3.js chord layout
+import * as d3 from 'd3';
+
+// 1. Create chord layout
+const chord = d3.chord()
+  .padAngle(0.05)
+  .sortSubgroups(d3.descending);
+
+// 2. Create ribbon generator
+const ribbon = d3.ribbon()
+  .radius(innerRadius);
+
+// 3. Create arc generator for segments
+const arc = d3.arc()
+  .innerRadius(innerRadius)
+  .outerRadius(outerRadius);
+
+// 4. Apply to data matrix
+const chords = chord(flowMatrix);
+
+// 5. Render arcs and ribbons with gradients
+```
+
+### Code Quality:
+- Use React hooks (useState, useEffect, useCallback, useMemo)
+- Implement proper prop validation
+- Add loading states for data transitions
+- Handle edge cases gracefully
+- Optimize re-renders with React.memo where appropriate
+- Add smooth CSS transitions
+- Follow existing code style and patterns
+- Ensure chord diagram renders smoothly with 60fps animations
+
+## 10. UI/UX Guidelines
+
+### Design Principles:
+- **Modern & Clean**: Use whitespace effectively
+- **Data-Driven**: Make data the hero with clear visualizations
+- **Elegant Curves**: Prioritize smooth, flowing lines in chord diagram
+- **Responsive**: Ensure mobile-friendly layouts (chord diagram scales appropriately)
+- **Accessible**: Use semantic HTML and ARIA labels
+- **Performant**: Smooth 60fps animations
+- **Consistent**: Match existing dashboard aesthetics
+
+### Color Scheme:
+- Primary: Blue (#3b82f6)
+- Success: Green (#22c55e)
+- Warning: Orange (#f97316)
+- Danger: Red (#ef4444)
+- Neutral: Slate shades
+- Background: White with subtle gradients
+- Gradients for ribbons: Use color interpolation between source and destination
+
+### Typography:
+- Headings: Bold, larger sizes with tight letter-spacing
+- Body: Regular weight, readable sizes
+- Data: Monospace for numbers when appropriate
+- Labels on chord diagram: Clear, readable sans-serif
+
+### Chord Diagram Specific Design:
+- **Segment thickness**: Proportional to total flow volume
+- **Ribbon curves**: Smooth Bezier curves (not straight)
+- **Hover state**: Brighten selected ribbon, dim others to 20% opacity
+- **Animations**: Smooth transitions when switching right-side filter (300ms ease)
+- **Tooltips**: Show on hover with flow volume and percentage
+
+## Implementation Priority:
+1. Authentication pages (Login/Signup)
+2. Remove vertical dropdown and update header
+3. Redesign top stats in Overview tab
+4. **Create Chord Diagram component** (most critical visual change)
+5. Add right-side filter dropdown for Areas/Specialities/Wards
+6. Generate matrix data for chord connections
+7. Add KPI section with graphs
+8. Integrate timeframe filtering across all components
+9. Create LiveCircuitFlow component for Product Journey
+10. Generate comprehensive synthetic data
+11. Polish animations and transitions
+12. Testing and refinement
+
+## Expected Outcome:
+A polished Hospital Pharma procurement platform with:
+- Secure authentication flow (UI only)
+- Pharmacy-specific KPIs and metrics
+- **Beautiful chord diagram visualization** matching the reference image style with curved arcs and flowing ribbons
+- Interactive filter to switch between Areas/Specialities/Wards on right side
+- Impressive live circuit flow for product journey tracking
+- Comprehensive synthetic data supporting all timeframes
+- Smooth, professional animations throughout
+- "Wow factor" that impresses users with data visualization quality
+
+**MOST IMPORTANT**: The Product Flow Analysis graph must look like a professional chord diagram with curved arc segments and flowing ribbon connections, NOT a bipartite graph with straight lines. Reference the attached image for the exact visual style needed.
+
+Please implement these changes while maintaining the existing code quality, following React best practices, and ensuring a smooth, professional user experience throughout the application. Pay special attention to the chord diagram implementation as this is the centerpiece visualization of the Overview tab.
