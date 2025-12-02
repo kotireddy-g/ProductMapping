@@ -1,13 +1,13 @@
 # ExperienceFlow Multi-Vertical Procurement Intelligence Platform
 
 ## Project Overview
-ExperienceFlow is a comprehensive procurement management system supporting multiple verticals including Hospitality, Supermarket, and Hospital Pharma sectors. The platform features product labeling using Reinforcement Learning concepts and provides detailed procurement analytics.
+ExperienceFlow is a comprehensive procurement management system supporting multiple verticals including Hospitality, Supermarket, and Hospital Pharma sectors. The platform features product labeling using Reinforcement Learning concepts and provides detailed procurement analytics with an interactive hierarchical bipartite chord diagram for product flow visualization.
 
 ## Project Type
 - **Framework**: React 18 with Create React App
 - **Build Tool**: react-scripts (webpack-based)
 - **Styling**: Tailwind CSS
-- **Visualization**: Recharts, D3.js
+- **Visualization**: Recharts, D3.js (bipartite chord diagram)
 - **Icons**: Lucide React
 
 ## Current State
@@ -19,19 +19,20 @@ ExperienceFlow is a comprehensive procurement management system supporting multi
 ```
 src/
 ├── components/          # React components
-│   ├── BouncingBubbles.js
+│   ├── BipartiteChord.js    # D3-based hierarchical chord diagram with drill-down
 │   ├── DetailDrawer.js
 │   ├── FilterPanel.js
-│   ├── OverviewTab.js
+│   ├── OverviewTab.js       # Main overview with flow visualization
 │   ├── PerformanceMetrics.js
 │   ├── ProductJourney.js
 │   ├── ProductLabelingPanel.js
 │   └── SearchBar.js
 ├── data/               # Mock data and synthetic data
+│   ├── hierarchicalData.js  # 5-level hierarchical product data with flows
 │   ├── mockData.js
 │   ├── syntheticChordData.js
 │   └── verticalData.js
-├── App.js             # Main application component
+├── App.js             # Main application component (single-page layout)
 ├── index.css          # Global styles with Tailwind
 └── index.js           # Entry point
 ```
@@ -63,14 +64,32 @@ src/
 - **Homepage**: /product-mapping
 
 ## Features
-1. **Product Journey Tab**: Track product consumption with performance metrics across multiple timeframes
-2. **Overview Tab**: Multi-vertical procurement intelligence with chord diagrams
-3. **Product Labeling (RL)**: Review and manage products labeled by Reinforcement Learning
-4. **Bouncing Bubbles**: Interactive animated visualization of product performance
+1. **Single-Page Layout**: Three section buttons (Overview, Product Journey, Product Labeling)
+2. **Bipartite Chord Diagram**: Interactive D3.js visualization showing product flows between categories and locations
+   - Color coding: Green (fast), Yellow (medium), Orange (slow), Red (occasional)
+   - Ribbon width: Based on consumption level (over, normal, under)
+   - 5-level drill-down: Category → Subcategory → Type → Brand → Product
+   - Breadcrumb navigation for easy backtracking
+3. **Product Journey Tab**: Track product consumption with performance metrics
+4. **Product Labeling (RL)**: Review and manage products labeled by Reinforcement Learning
 5. **Detail Drawer**: Comprehensive product analysis with trend charts
 
+## Hierarchical Data Structure
+The bipartite chord diagram uses a hierarchical data structure:
+- **Categories**: Top-level product categories (Fresh Produce, Dairy, etc.)
+- **Subcategories**: Groupings within categories (Vegetables, Fruits, etc.)
+- **Types**: Specific types (Leafy Greens, Root Vegetables, etc.)
+- **Brands**: Product brands (Farm Fresh, Green Garden, etc.)
+- **Products**: Individual products (Organic Lettuce, Spinach, etc.)
+
+Each level has:
+- `connectedAreas`: Array of area IDs this item connects to
+- `areaFlows`: Object mapping area IDs to { volume, consumption } data
+- `movement`: Speed indicator (fast, medium, slow, occasional)
+- `consumption`: Level indicator (over, normal, under)
+
 ## Supported Verticals
-1. **Hospitality**: Hotels, restaurants, catering
+1. **Hospitality**: Hotels, restaurants, catering (with complete hierarchical data)
 2. **Supermarket**: Retail grocery operations
 3. **Hospital Pharma**: Hospital pharmaceutical procurement
 
@@ -82,11 +101,17 @@ src/
 - D3.js 7.8.5
 - Lucide React 0.263.1
 
-## Known Issues
-- Minor ESLint warnings for unused imports (non-critical)
-- Some React Hook dependency warnings (functionality not affected)
-
 ## Recent Changes
+- December 2, 2025: UI Redesign
+  - Implemented single-page layout with section buttons
+  - Created BipartiteChord component with D3.js for product flow visualization
+  - Added hierarchical data structure with 5-level drill-down capability
+  - Color-coded ribbons for movement speed visualization
+  - Width-coded ribbons for consumption level indication
+  - Breadcrumb navigation for drill-down paths
+  - Interactive guide/tooltip explaining chart usage
+  - Fixed all ESLint warnings
+
 - December 2, 2025: Initial Replit environment setup
   - Configured port 5000 for frontend
   - Set up environment variables for Replit compatibility
@@ -104,4 +129,5 @@ src/
 - Mock data is used throughout (no backend/API integration)
 - State management is handled via React hooks (no Redux)
 - Tailwind CSS with PostCSS for styling
-- D3 used for chord diagrams, Recharts for other visualizations
+- D3 used for bipartite chord diagrams with hierarchical drill-down
+- Recharts for other visualizations
