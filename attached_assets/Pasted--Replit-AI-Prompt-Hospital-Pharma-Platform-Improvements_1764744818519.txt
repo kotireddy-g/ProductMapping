@@ -1,0 +1,629 @@
+# Replit AI Prompt - Hospital Pharma Platform Improvements
+
+## Overview of Changes
+Implement major workflow improvements to the Hospital Pharma Procurement Platform including a new label-based navigation system, enhanced visualizations, RCA/recommendations screen, and vendor forecast reporting.
+
+---
+
+## 1. NEW FIRST SCREEN - Label Dashboard (Landing Page After Login)
+
+### Requirements:
+Create a new landing page that displays procurement labels as the main navigation:
+
+### Label Categories to Display:
+1. **Over-Stocking** - Products with excess inventory
+2. **Under-Stocking** - Products below optimal levels
+3. **Expiry Risk** - Products nearing expiry (< 30 days)
+4. **Wastage** - Products wasted due to expiry or damage
+5. **Dead Stock** - Products with no movement (> 90 days)
+6. **Stockout Risk** - Products at critical low levels
+7. **High Velocity** - Fast-moving products requiring attention
+8. **Slow Moving** - Products with declining consumption
+9. **Emergency Shortage** - Critical medicines running low
+10. **Cost Overrun** - Products exceeding budget allocation
+
+### Label Card Design:
+Each label should be displayed as a card showing:
+- **Label Name** (large, bold text)
+- **Affected Products Count** (e.g., "23 products")
+- **Total Value/Quantity** affected
+- **Status Icon** (Alert/Warning/Check icon)
+- **Color-coded Border and Background**:
+  - **Green**: All products normal (0-5 affected items)
+  - **Yellow**: Moderate issues (6-15 affected items)
+  - **Red**: Critical issues (16+ affected items)
+- **Trend Indicator**: Arrow showing if situation is improving/worsening
+- **Clickable** to navigate to detailed view
+
+### Layout:
+- Grid layout: 3-4 columns on desktop, 2 on tablet, 1 on mobile
+- Animated cards with hover effects (lift and shadow increase)
+- Each card pulses gently if status is Red (critical)
+- Sort cards by severity (Red first, then Yellow, then Green)
+
+### Top Section:
+- Show "Procurement Health Overview" heading
+- Display overall health score (e.g., "78/100" with color indicator)
+- Show last updated timestamp
+- Quick stats: Total SKUs, Total Value, Active Alerts
+
+### Synthetic Data Requirements:
+Generate realistic data for each label:
+- Product counts per label (mix of red/yellow/green states)
+- Total monetary value affected
+- Trend data (7-day history showing improvement/decline)
+- Severity distribution across labels
+
+---
+
+## 2. SECOND SCREEN - Label-Specific Dashboard (After Clicking Label)
+
+### Global Search Bar with Label Keywords:
+
+#### Search Bar Features:
+- **Position**: Top of page, full width, prominent placement
+- **Placeholder**: "Search by label, product, category, or vendor..."
+- **Auto-complete**: Show suggestions as user types
+- **Label Keywords Display**: Below search bar, show clickable keyword chips:
+  - All 10 label names as colored chips/badges
+  - Currently selected label highlighted with blue border
+  - Click any chip to instantly switch to that label's data
+  - Smooth transition animation when switching labels
+
+#### Remove Existing Search:
+- **Delete the search bar from top-right corner** (beside logout)
+- Keep only the new global search bar
+
+### Tab Navigation:
+Keep 3 tabs below the search bar:
+1. **Overview** (existing)
+2. **Product Journey** (existing)
+3. **Product Improvement** (renamed from "Product Labeling")
+   - Remove all "RL" or "RLHF" references
+   - Update component names and UI text accordingly
+
+---
+
+## 3. OVERVIEW TAB - Second Screen Improvements
+
+### A. Chord Diagram Modifications:
+
+#### Left Side Color Change:
+- **Remove individual colors** from left-side medicine categories
+- **Use uniform blue color** for all left-side segments (same as right side)
+- Keep labels: Emergency Medicines, OT Medicines, Ward Medicines, Daycare Medicines, General Medicines, Implant Medicines
+
+#### Ribbon Styling:
+- **Ribbon COLOR = Movement speed** (from movement legends):
+  - Fast → Green
+  - Medium → Yellow  
+  - Slow → Orange
+  - Occasional → Red
+- **Ribbon THICKNESS = Consumption level**:
+  - Thick → Over-consumption
+  - Medium → Normal
+  - Thin → Under-consumption
+- This matches the reference screenshot
+
+#### Ribbon Click Interaction:
+- **On ribbon click**: Navigate to **Third Screen** (RCA & Recommendations)
+- Pass data: medicine type, destination, flow volume, label context
+- Smooth transition animation
+
+#### Data Filtering by Selected Label:
+- Chord diagram shows only data relevant to selected label from first screen
+- Example: If "Over-Stocking" selected, show only over-consumed flows
+- Update flow volumes, connections dynamically based on label
+
+### B. Categories & Functions Section (NEW - Below Chord):
+
+#### Layout:
+Two-column grid showing:
+
+**Left Column - Affected Categories:**
+- List 6-8 categories affected by selected label
+- Each row shows:
+  - Category name
+  - Allocated Quantity (e.g., "1,500 units")
+  - Actual Consumption (e.g., "1,850 units")
+  - Variance badge (e.g., "+350" in red if over, "-200" in yellow if under)
+  - Progress bar showing allocation vs consumption
+
+**Right Column - Affected Functions:**
+- List 6-8 hospital functions/departments
+- Same layout as categories
+- Show ICU, Emergency Ward, OT, General Ward, etc.
+
+#### Styling:
+- Clean table-like layout with alternating row colors
+- Color-code variance numbers (green=normal, yellow=under, red=over)
+- Add sort functionality (by variance, by quantity)
+
+### C. Vendor List Section (NEW - Below Categories):
+
+#### Display:
+- Horizontal scrollable list or grid of vendor cards
+- Each vendor card shows:
+  - Vendor name
+  - Logo placeholder (circular avatar)
+  - Number of SKUs supplied (relevant to selected label)
+  - Total value supplied
+  - OTIF % for this vendor
+  - Status badge (Reliable/Warning/Critical)
+  - Click to see vendor details
+
+#### Styling:
+- Compact cards with vendor info
+- Color-coded borders based on performance
+- Show 4-5 vendors per row, horizontally scrollable
+
+### D. Label-Specific KPIs (3-4 KPIs per Label):
+
+#### KPI Configuration by Label:
+
+**Over-Stocking:**
+1. Excess Inventory Value (Goal: ₹0, Current: ₹250K, Baseline: ₹400K)
+2. Storage Cost Impact (Goal: 2%, Current: 5%, Baseline: 8%)
+3. Capital Blocked (Goal: ₹100K, Current: ₹350K, Baseline: ₹500K)
+4. Turnover Ratio (Goal: 12x/year, Current: 6x, Baseline: 4x)
+
+**Under-Stocking:**
+1. Stockout Frequency (Goal: 2/month, Current: 8/month, Baseline: 12/month)
+2. Emergency Purchase Rate (Goal: 5%, Current: 18%, Baseline: 25%)
+3. Service Level (Goal: 98%, Current: 85%, Baseline: 75%)
+4. Patient Impact Score (Goal: 5/100, Current: 22/100, Baseline: 35/100)
+
+**Expiry Risk:**
+1. Expiry Rate (Goal: 1%, Current: 3.2%, Baseline: 5%)
+2. Value at Risk (Goal: ₹50K, Current: ₹180K, Baseline: ₹300K)
+3. Days to Expiry (Avg) (Goal: 90 days, Current: 25 days, Baseline: 15 days)
+4. Write-off Cost (Goal: ₹20K, Current: ₹95K, Baseline: ₹150K)
+
+**Wastage:**
+1. Wastage Rate (Goal: 1%, Current: 2.8%, Baseline: 4%)
+2. Wastage Cost (Goal: ₹30K, Current: ₹120K, Baseline: ₹200K)
+3. Disposal Cost (Goal: ₹10K, Current: ₹35K, Baseline: ₹50K)
+4. Environmental Impact Score (Goal: 20, Current: 55, Baseline: 80)
+
+(Generate similar KPIs for remaining 6 labels)
+
+#### KPI Card Design (Reference Image 2):
+Each KPI card displays:
+- **Top Section**:
+  - Time period selector: Daily/Weekly/Monthly/Quarterly (pills)
+  - Last update timestamp
+- **Middle Section** (3 columns):
+  - **Left**: Monthly Goal value (gray text)
+  - **Center**: NA Baseline (gray text)  
+  - **Right**: Current value (large, colored based on performance)
+  - **Below Right**: Last week value and DOW (Day of Week)
+  - **Below Middle**: Monthly till date value (green if improving)
+- **Bottom Section**:
+  - 7-day trend line chart with:
+    - Green line showing actual values
+    - Dashed blue line showing goal
+    - Area fill under green line (light green)
+    - Data points on line
+    - X-axis: Dates
+    - Y-axis: Values
+    - "Last 7 days" label below chart
+
+#### KPI Click Interaction:
+- Click on KPI card → Open end drawer (slide from right)
+- Drawer shows:
+  - **Main KPI details** (expanded view with more metrics)
+  - **3-5 Related Sub-KPIs** in smaller cards with same design pattern
+  - Example: Click "Expiry Rate" → Drawer shows:
+    - Expiry Rate (main, large)
+    - Products Near Expiry (sub)
+    - Categories Affected (sub)
+    - Value at Risk Trend (sub)
+    - Vendor Performance on Expiry (sub)
+- Drawer includes close button (X) and back navigation
+
+#### Styling:
+- 2x2 grid layout for 4 KPIs (3 KPIs in 3-column for some labels)
+- Cards match Image 2 design with green/blue color scheme
+- Recharts for line graphs
+- Responsive grid
+
+---
+
+## 4. THIRD SCREEN - RCA & Recommendations (Reference Image 3)
+
+### Trigger:
+- User clicks on any **ribbon in chord diagram** (Overview tab)
+- Navigate to new screen showing Root Cause Analysis and AI recommendations
+
+### Top Section - Product List:
+- **Horizontal scrollable list** of products affected by selected flow
+- Shows 5-10 products as chips/pills
+- First product selected by default
+- Click to switch between products
+- Each chip shows: Product name (SKU), Quantity affected
+- Currently selected chip highlighted with blue background
+
+### Main Layout (3-column grid):
+
+#### LEFT COLUMN - Decision Summary:
+
+**Header**: "DECISION SUMMARY - RECOMMENDED ACTION • SINGLE SKU"
+- Badge: "RLHL DECISION" (top right of section)
+
+**Metrics Display**:
+1. **Recommended Order Qty**: 
+   - Large number: "120 units"
+   - Comparison: "+24 vs. last week" (green text with arrow)
+   
+2. **Vendor**:
+   - Name: "Vendor A"
+   - OTIF: "96%" with green badge
+   
+3. **Confidence**:
+   - Score: "0.87"
+   - Route: "AUTO" badge
+   
+4. **Risk Level**:
+   - Text: "MEDIUM"
+   - Stockout risk: "4%"
+
+**Risk Radar Section**:
+- Text: "Risk Radar (Stockout • Waste • Price • Lead Time • Supplier)"
+- Visual indicator or mini chart (optional)
+
+**Human Action Section**:
+- 3 buttons:
+  - ✓ Accept as-is (blue, primary)
+  - ⚙️ Modify & Approve (outline)
+  - ✕ Reject (red, outline)
+  
+**Override Form** (appears if Modify selected):
+- Updated Order Qty: Input field (default: 120)
+- Updated Vendor: Dropdown (default: Vendor A)
+- Rating (1-5): Number input (default: 5)
+- Comment textarea: "Add comment / reason for override (optional)..."
+- Status text: "No action taken yet. This will be logged as RLH..."
+- Decision ID: "DEC-2025-112-01" (top right badge)
+- Action status: "Pending" (bottom right badge)
+
+#### MIDDLE COLUMN - Counterfactual Scenarios:
+
+**Header**: "COUNTERFACTUAL SCENARIOS - WHAT IF WE ORDERED MORE / LESS?"
+- Badge: "Simulated" (top right)
+
+**Table with 3 rows**:
+| Scenario | Order Qty | Total Cost | Stockout Risk | Service Level |
+|----------|-----------|------------|---------------|---------------|
+| Recommended | 120 | ₹4,800 | 4% | 96% |
+| +20% Qty | 144 | ₹5,600 | 1% | 99% |
+| -20% Qty | 96 | ₹3,900 | 12% | 88% |
+
+**Explanation Text Below Table**:
+"The model selects 120 units as the best balance: it avoids most stockout risk without incurring the extra holding cost from 144 units. Human approvers can see these trade-offs before overriding."
+
+**Human Feedback Loop Section Below**:
+- Header: "HUMAN FEEDBACK LOOP - OVERRIDES & RATINGS FOR THIS SKU (LAST 7 DAYS)"
+- Badge: "RLHL Feedback Stream" (top right)
+
+Timeline showing 3 entries:
+1. 🟦 Today • Auto-approved (badge: Approved)
+   - "Recommended 120 • No override • Rating: ★★★★☆"
+   
+2. 🟧 30 Nov • Modified by User (badge: Qty Changed)
+   - "System: 110 → User: 90 • Comment: 'Banquet cancelled'"
+   
+3. 🟥 24 Nov • Rejected (badge: Rejected)
+   - "System: 80 • User chose Vendor B instead • Stockout occurred"
+
+**Bottom Stats**:
+- Override rate (7d): 28%
+- Avg. rating: 4.2 / 5
+- Learning signal: Enabled
+
+#### RIGHT COLUMN - Policy Health:
+
+**Header**: "POLICY HEALTH (SKU-112) - LAST 30 DAYS"
+- Badge: "Monitoring" (top right)
+
+**Metrics**:
+1. **Episodes Reward**: 
+   - Value: "+312"
+   - Trend: "↑ improving vs last month" (green)
+   
+2. **Stockout Days**:
+   - Value: "1"
+   - Trend: "↓ from 4 last month" (green)
+
+### RCA Section at Bottom:
+
+**Header**: "RCA — KEY DRIVERS - TOP FACTORS INFLUENCING THIS RECOMMENDATION"
+- Badge: "Explainability: Template" (top right, orange)
+
+**Key Driver Bars** (horizontal bar chart):
+1. Days of Stock Remaining (DoC): -0.42 (red bar, longest)
+2. Supplier Lead Time Variability: -0.28 (orange bar)
+3. Recent Consumption Trend: +0.35 (green bar)
+4. Seasonal Demand Factor: +0.18 (light green bar)
+5. Vendor OTIF Score: +0.22 (green bar)
+
+Each bar shows:
+- Factor name on left
+- Horizontal bar colored by impact (red=negative, green=positive)
+- Numeric value on right
+
+### Styling Requirements:
+- **Dark theme**: Dark blue/navy background (#1e293b or similar)
+- **Card-based layout**: White text on dark cards
+- **Accent colors**: Blue for primary actions, green for positive, red for negative
+- **Badges**: Rounded pills with colored backgrounds
+- **Typography**: Clear hierarchy with bold headings
+- **Icons**: Use Lucide React icons throughout
+- **Spacing**: Generous padding between sections
+- **Responsive**: Stack columns vertically on mobile
+
+### Synthetic Data Requirements:
+- Generate 20+ products with full RCA data
+- Create realistic scenarios with varying confidence levels
+- Generate counterfactual simulations for each product
+- Create human feedback timeline with mixed outcomes
+- Calculate policy health metrics
+- Generate RCA drivers with realistic impact scores
+
+---
+
+## 5. PRODUCT JOURNEY TAB - Second Screen Improvements
+
+### Category Selection Bar (NEW - Top of Page):
+
+#### Layout:
+- Horizontal scrollable bar with category chips
+- Show all 6 medicine categories:
+  - Emergency Medicines (default selected)
+  - OT Medicines
+  - Ward Medicines
+  - Daycare Medicines
+  - General Medicines
+  - Implant Medicines
+- First category selected by default on page load
+- Click any chip to change active category
+- Smooth transition when switching categories
+
+#### Styling:
+- Selected chip: Blue background, white text
+- Unselected: White background, blue border, blue text
+- Hover effect: Slight shadow and lift
+
+### Circuit Graph Modifications:
+
+#### Level 1 - Product Node (Left):
+- **Remove color coding** (no red/yellow/green)
+- **Use uniform color** for all product nodes (e.g., slate blue #64748b)
+- Keep existing info: Medicine name, Allocated quantity
+- Keep pulse animation but slower (2s cycle instead of 1s)
+
+#### Level 2 - Distribution Nodes:
+- Keep as-is (Areas/Departments: ICU, Emergency, General Ward, etc.)
+- Current stock display
+- **Do NOT color-code these** - use neutral color
+
+#### Level 3 - Usage Count Nodes (NEW):
+- Show "Usage Count" for each distribution point
+- Display: "Used: 450 units" (example)
+- **COLOR-CODE based on flow**:
+  - **Green**: Normal usage (80-120% of expected)
+  - **Yellow**: Under-usage (<80% of expected)
+  - **Red**: Over-usage (>120% of expected)
+- Pulse animation speed varies by urgency
+
+#### Level 4 - Available Stock Nodes (NEW):
+- Show "Available Stock" remaining at each point
+- Display: "Stock: 200 units" (example)
+- Color based on stock level:
+  - Green: >60% stock
+  - Yellow: 30-60% stock  
+  - Red: <30% stock (critical)
+
+#### Level 5 - Final Status Nodes (Right):
+- Keep as-is (consumption endpoints)
+
+#### Particle Animation:
+- **Slow down particles** significantly
+- Current speed appears too fast - reduce to 40-50% of current speed
+- Particles should flow smoothly and be clearly visible
+- Particle color matches source node color
+- Particle count increases with higher flow volume
+
+### Interactivity:
+- Click main product node → Open DetailDrawer (as currently implemented)
+- Hover any node → Show tooltip with detailed stats
+- Hover connection line → Highlight full path with glow effect
+
+---
+
+## 6. VENDOR FORECAST REPORT (Top Navigation)
+
+### Top Bar Addition:
+- Add **"Vendor Forecast"** button next to logout in top navigation bar
+- Icon: TrendingUp or BarChart3
+- Click opens modal/drawer with vendor forecast table
+
+### Vendor Forecast Modal/Drawer:
+
+#### Header:
+- Title: "Vendor Forecast Report"
+- Subtitle: "Supply vs Consumption Analysis - Next 30 Days"
+- Close button (X)
+- Export buttons: Download CSV, Download PDF
+
+#### Main Table:
+Display comprehensive vendor forecast data in a data table with these columns:
+
+| Column | Description | Example |
+|--------|-------------|---------|
+| Vendor Name | Supplier name | "Vendor A", "Medplus Suppliers" |
+| Category | Medicine category | "Emergency Medicines" |
+| Total SKUs | Number of products supplied | "24" |
+| Available Stock | Current inventory | "2,400 units" |
+| Avg Monthly Stock | Historical average | "2,100 units" |
+| Expected Consumption | Next 30 days forecast | "1,800 units" |
+| Overstock | Excess inventory | "600 units (+33%)" in yellow/red |
+| Understock | Deficit inventory | "-200 units (-12%)" in yellow/red |
+| Reorder Point | When to reorder | "800 units" |
+| Lead Time | Delivery time | "5 days" |
+| OTIF % | On-time in-full | "94%" with color badge |
+| Next Delivery | Scheduled date | "Dec 10, 2025" |
+| Actions | Quick actions | "Order Now", "Adjust Stock" buttons |
+
+#### Table Features:
+- **Sortable columns**: Click header to sort
+- **Filter by category**: Dropdown filter above table
+- **Search**: Search by vendor name
+- **Pagination**: Show 10 rows per page
+- **Row highlighting**: 
+  - Red row: Critical overstock or understock (>30%)
+  - Yellow row: Moderate issues (15-30%)
+  - White row: Normal range
+- **Expandable rows**: Click row to see detailed SKU breakdown
+
+#### Summary Cards Above Table:
+Show 4 summary metrics:
+1. **Total Vendors**: Count of active vendors
+2. **Overstock Value**: Total ₹ in overstock
+3. **Understock Risk**: Total ₹ at risk
+4. **Avg OTIF**: Average across all vendors
+
+#### Visual Enhancements:
+- Mini sparklines in "Available Stock" column showing 30-day trend
+- Color-coded badges for OTIF % (Green: >90%, Yellow: 80-90%, Red: <80%)
+- Progress bars in overstock/understock columns
+- Action buttons with icons
+
+#### Synthetic Data:
+Generate 15-20 vendors with:
+- Mix of overstocked and understocked scenarios
+- Realistic lead times (3-14 days)
+- OTIF scores (70-98%)
+- Stock levels with variance
+- Expected consumption based on historical patterns
+- Reorder points calculated from lead time and consumption
+
+---
+
+## GENERAL REQUIREMENTS
+
+### Data Consistency:
+- All data in Second Screen must relate to selected label from First Screen
+- Timeframe filters should update all components simultaneously
+- Smooth transitions when switching labels or timeframes
+- Loading states during data transitions
+
+### Navigation Flow:
+```
+Login → First Screen (Label Dashboard) 
+  ↓ (click label)
+Second Screen (Label-Specific Dashboard with tabs)
+  ↓ (click ribbon in Overview tab)
+Third Screen (RCA & Recommendations)
+  ↓ (back navigation)
+Second Screen
+
+Also:
+Second Screen → Vendor Forecast Modal (from top nav)
+```
+
+### Synthetic Data Requirements:
+Generate comprehensive data sets for:
+1. 10 labels with varying severity levels
+2. 50+ products across 6 categories
+3. 15-20 vendors with full forecast data
+4. Time-series data for all KPIs (hourly to yearly)
+5. RCA data for each product-location flow
+6. Counterfactual scenarios for all recommendations
+7. Human feedback timeline data
+8. Policy health metrics
+9. Usage and stock data for circuit flow
+10. Vendor performance data
+
+### UI/UX Consistency:
+- Maintain existing blue/slate color scheme
+- Use Tailwind CSS utilities
+- Lucide React icons throughout
+- Smooth transitions and animations (300ms ease)
+- Responsive design (mobile, tablet, desktop)
+- Consistent card shadows and borders
+- Professional typography hierarchy
+
+### Performance:
+- Optimize re-renders with React.memo
+- Use useMemo for expensive calculations
+- Lazy load Third Screen components
+- Debounce search input
+- Smooth 60fps animations
+
+### Component Structure:
+```
+src/
+├── components/
+│   ├── FirstScreen/
+│   │   ├── LabelDashboard.js (NEW)
+│   │   └── LabelCard.js (NEW)
+│   ├── SecondScreen/
+│   │   ├── GlobalSearch.js (NEW)
+│   │   ├── Overview/
+│   │   │   ├── ChordDiagram.js (MODIFY)
+│   │   │   ├── CategoriesSection.js (NEW)
+│   │   │   ├── VendorList.js (NEW)
+│   │   │   └── LabelKPIs.js (NEW)
+│   │   ├── ProductJourney/
+│   │   │   ├── CategorySelector.js (NEW)
+│   │   │   └── CircuitFlow.js (MODIFY)
+│   │   └── ProductImprovement/ (RENAME from ProductLabeling)
+│   ├── ThirdScreen/
+│   │   ├── RCAScreen.js (NEW)
+│   │   ├── DecisionSummary.js (NEW)
+│   │   ├── Counterfactual.js (NEW)
+│   │   ├── HumanFeedback.js (NEW)
+│   │   └── PolicyHealth.js (NEW)
+│   ├── VendorForecast/
+│   │   └── ForecastModal.js (NEW)
+│   └── [existing components]
+├── data/
+│   ├── labelData.js (NEW)
+│   ├── rcaData.js (NEW)
+│   ├── vendorForecastData.js (NEW)
+│   └── [existing data files]
+└── App.js (UPDATE routing)
+```
+
+---
+
+## IMPLEMENTATION PRIORITY
+
+1. **First Screen - Label Dashboard** (NEW landing page after login)
+2. **Second Screen - Global Search with Label Keywords** (replace existing search)
+3. **Rename Product Labeling → Product Improvement** (remove RL references)
+4. **Modify Chord Diagram** (uniform left colors, ribbon=movement, thickness=consumption)
+5. **Add Categories & Functions Section** (below chord)
+6. **Add Vendor List Section** (below categories)
+7. **Create Label-Specific KPIs** (3-4 per label with drawer interaction)
+8. **Product Journey Improvements** (category selector, uniform product colors, slow particles, 5-level flow)
+9. **Third Screen - RCA & Recommendations** (complete new screen)
+10. **Vendor Forecast Report** (top nav modal/drawer)
+11. **Generate All Synthetic Data** (comprehensive data for all features)
+12. **Polish & Test** (animations, transitions, responsive design)
+
+---
+
+## EXPECTED OUTCOME
+
+A fully functional Hospital Pharma Procurement Platform with:
+- **Label-driven navigation** starting from label dashboard
+- **Context-aware data** throughout (everything relates to selected label)
+- **Professional RCA & recommendations** with counterfactual simulations
+- **Enhanced product journey** with 5-level circuit flow and proper color coding
+- **Vendor forecast capabilities** for supply chain planning
+- **Consistent, modern UI** matching reference screenshots
+- **Comprehensive synthetic data** supporting all workflows
+- **Smooth, polished UX** with professional animations and transitions
+
+The platform should feel like an enterprise-grade solution with AI-powered insights, human-in-the-loop decision making, and comprehensive supply chain visibility.
