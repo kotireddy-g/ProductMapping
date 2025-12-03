@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import * as d3 from 'd3';
 import { generateChordData, pharmaCategories } from '../../data/pharmaChordData';
 
-const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
+const PharmaChordDiagram = ({ timeframe = 'daily', selectedLabel, onRibbonClick }) => {
   const svgRef = useRef();
   const containerRef = useRef();
   const [filterType, setFilterType] = useState('areas');
@@ -13,6 +13,13 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
     generateChordData(filterType, timeframe), 
     [filterType, timeframe]
   );
+
+  const movementColors = {
+    fast: '#22c55e',
+    medium: '#eab308',
+    slow: '#f97316',
+    occasional: '#ef4444'
+  };
 
   useEffect(() => {
     const updateDimensions = () => {
@@ -45,13 +52,14 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
 
     const defs = svg.append('defs');
     
+    const uniformBlue = '#3b82f6';
     pharmaCategories.forEach(cat => {
       const gradient = defs.append('linearGradient')
         .attr('id', `gradient-${cat.id}`)
         .attr('x1', '0%').attr('y1', '0%')
         .attr('x2', '100%').attr('y2', '0%');
-      gradient.append('stop').attr('offset', '0%').attr('stop-color', cat.gradient[0]);
-      gradient.append('stop').attr('offset', '100%').attr('stop-color', cat.gradient[1]);
+      gradient.append('stop').attr('offset', '0%').attr('stop-color', uniformBlue);
+      gradient.append('stop').attr('offset', '100%').attr('stop-color', '#2563eb');
     });
 
     const g = svg.append('g')
@@ -80,16 +88,8 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
       return Math.max(2, baseWidth * (consumptionMultiplier[connection.consumption] || 1));
     };
 
-    const getOpacity = (consumption) => {
-      const opacities = { over: 0.85, normal: 0.7, under: 0.5, dead: 0.3 };
-      return opacities[consumption] || 0.7;
-    };
-
-    const getConsumptionTint = (consumption, baseColor) => {
-      if (consumption === 'over') return d3.color(baseColor).darker(0.3);
-      if (consumption === 'under') return d3.color(baseColor).brighter(0.5);
-      if (consumption === 'dead') return d3.color('#94a3b8');
-      return d3.color(baseColor);
+    const getRibbonColor = (movement) => {
+      return movementColors[movement] || movementColors.medium;
     };
 
     const linksGroup = g.append('g').attr('class', 'ribbons');
@@ -131,8 +131,7 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
       if (sourceY === undefined || targetY === undefined) return;
 
       const strokeWidth = getStrokeWidth(connection);
-      const sourceCategory = pharmaCategories.find(c => c.id === connection.source);
-      const fillColor = getConsumptionTint(connection.consumption, sourceCategory?.color || '#3b82f6');
+      const fillColor = getRibbonColor(connection.movement);
 
       linksGroup.append('path')
         .attr('d', createCurvedPath(
@@ -143,7 +142,7 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
           strokeWidth
         ))
         .attr('fill', fillColor)
-        .attr('fill-opacity', getOpacity(connection.consumption))
+        .attr('fill-opacity', 0.7)
         .style('cursor', 'pointer')
         .on('mouseover', function() {
           d3.select(this).attr('fill-opacity', 0.95);
@@ -157,8 +156,20 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
           });
         })
         .on('mouseout', function() {
-          d3.select(this).attr('fill-opacity', getOpacity(connection.consumption));
+          d3.select(this).attr('fill-opacity', 0.7);
           setHoveredItem(null);
+        })
+        .on('click', function() {
+          if (onRibbonClick) {
+            onRibbonClick({
+              source: connection.sourceName,
+              target: connection.targetName,
+              volume: connection.volume,
+              consumption: connection.consumption,
+              movement: connection.movement,
+              labelContext: selectedLabel
+            });
+          }
         });
     });
 
@@ -173,29 +184,18 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
       .attr('width', 15)
       .attr('height', leftScale.bandwidth())
       .attr('rx', 4)
-      .attr('fill', d => `url(#gradient-${d.id})`)
+      .attr('fill', uniformBlue)
       .style('cursor', 'pointer')
       .on('mouseover', function(event, d) {
         d3.select(this).attr('opacity', 0.8);
-        linksGroup.selectAll('path')
-          .attr('fill-opacity', function() {
-            const pathData = d3.select(this).datum?.();
-            return pathData?.source === d.id ? 0.9 : 0.1;
-          });
         setHoveredItem({
           type: 'category',
           name: d.name,
-          color: d.color
+          color: uniformBlue
         });
       })
       .on('mouseout', function() {
         d3.select(this).attr('opacity', 1);
-        linksGroup.selectAll('path')
-          .each(function(conn) {
-            if (conn) {
-              d3.select(this).attr('fill-opacity', getOpacity(conn.consumption));
-            }
-          });
         setHoveredItem(null);
       });
 
@@ -250,7 +250,7 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
       .attr('fill', '#1e293b')
       .text(d => d.name);
 
-  }, [chordData, dimensions, timeframe]);
+  }, [chordData, dimensions, timeframe, selectedLabel, onRibbonClick]);
 
   const filterOptions = [
     { value: 'areas', label: 'Areas' },
@@ -263,10 +263,16 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            {pharmaCategories.slice(0, 3).map(cat => (
-              <div key={cat.id} className="flex items-center gap-1.5">
-                <div className="w-3 h-3 rounded" style={{ backgroundColor: cat.color }} />
-                <span className="text-xs text-slate-600">{cat.name.split(' ')[0]}</span>
+            <span className="text-xs font-medium text-slate-600">Movement Speed:</span>
+            {[
+              { label: 'Fast', color: '#22c55e' },
+              { label: 'Medium', color: '#eab308' },
+              { label: 'Slow', color: '#f97316' },
+              { label: 'Occasional', color: '#ef4444' }
+            ].map(item => (
+              <div key={item.label} className="flex items-center gap-1">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
+                <span className="text-xs text-slate-500">{item.label}</span>
               </div>
             ))}
           </div>
@@ -287,24 +293,8 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
 
       <div className="flex gap-4">
         <div className="flex-1 bg-white rounded-xl border border-slate-200 p-4 relative">
-          <div className="absolute top-2 left-4 flex items-center gap-4 text-xs">
-            <div className="flex items-center gap-2">
-              <span className="font-medium text-slate-600">Movement:</span>
-              {[
-                { label: 'Fast', color: '#22c55e' },
-                { label: 'Medium', color: '#eab308' },
-                { label: 'Slow', color: '#f97316' },
-                { label: 'Occasional', color: '#ef4444' }
-              ].map(item => (
-                <div key={item.label} className="flex items-center gap-1">
-                  <div className="w-2.5 h-2.5 rounded" style={{ backgroundColor: item.color }} />
-                  <span className="text-slate-500">{item.label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
           <div className="absolute top-2 right-4 flex items-center gap-4 text-xs">
-            <span className="font-medium text-slate-600">Status:</span>
+            <span className="font-medium text-slate-600">Thickness = Consumption:</span>
             {[
               { label: 'Over', width: 'w-6' },
               { label: 'Normal', width: 'w-4' },
@@ -316,6 +306,9 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
               </div>
             ))}
           </div>
+          <p className="absolute top-2 left-4 text-xs text-blue-600 font-medium">
+            Click on ribbons to view RCA & Recommendations
+          </p>
           <svg ref={svgRef} className="w-full" style={{ marginTop: '20px' }} />
         </div>
 
@@ -330,6 +323,12 @@ const PharmaChordDiagram = ({ timeframe = 'daily' }) => {
                 <p><span className="text-slate-400">From:</span> {hoveredItem.source}</p>
                 <p><span className="text-slate-400">To:</span> {hoveredItem.target}</p>
                 <p><span className="text-slate-400">Volume:</span> {hoveredItem.volume} units</p>
+                <p><span className="text-slate-400">Movement:</span> 
+                  <span className="ml-1 px-2 py-0.5 rounded text-xs" 
+                    style={{ backgroundColor: movementColors[hoveredItem.movement] }}>
+                    {hoveredItem.movement}
+                  </span>
+                </p>
                 <p><span className="text-slate-400">Status:</span> 
                   <span className={`ml-1 px-2 py-0.5 rounded text-xs ${
                     hoveredItem.consumption === 'over' ? 'bg-red-500' :
