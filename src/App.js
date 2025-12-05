@@ -27,7 +27,7 @@ function App() {
   
   // Data management
   const [currentDataSet, setCurrentDataSet] = useState(1);
-  const [currentOtif, setCurrentOtif] = useState(dataSet1.otifPercentage);
+  const [currentOtif, setCurrentOtif] = useState(88.9);
   
   // Notifications
   const [currentNotifications, setCurrentNotifications] = useState([]);
@@ -106,7 +106,7 @@ function App() {
   const handleUploadComplete = () => {
     const newDataSet = currentDataSet === 1 ? 2 : 1;
     setCurrentDataSet(newDataSet);
-    setCurrentOtif(newDataSet === 1 ? dataSet1.otifPercentage : dataSet2.otifPercentage);
+    setCurrentOtif(newDataSet === 1 ? 88.9 : 97.1);
     
     // Update notifications
     const newNotifs = newDataSet === 1 ? notifications.dataSet1 : notifications.dataSet2;
@@ -237,15 +237,17 @@ function App() {
 
       <div className="max-w-7xl mx-auto px-6 py-6">
         {currentScreen === 'first' && (
-          <LabelDashboard onLabelSelect={handleLabelSelect} />
+          <LabelDashboard 
+            onLabelSelect={handleLabelSelect} 
+            currentDataSet={currentDataSet}
+          />
         )}
 
         {currentScreen === 'second' && (
           <SecondScreenDashboard
-            selectedLabel={selectedLabel}
-            onLabelChange={handleLabelChange}
-            onRibbonClick={handleRibbonClick}
+            selectedItem={selectedLabel}
             onBack={handleBackToFirst}
+            currentDataSet={currentDataSet}
           />
         )}
       </div>

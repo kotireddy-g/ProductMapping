@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import EnhancedSankeyDiagram from './EnhancedSankeyDiagram';
 import KpiCards from './KpiCards';
 import ForecastReviewPage from '../ForecastReview/ForecastReviewPage';
 import { coreLabels, getPriorityColor } from '../../data/coreLabelsData';
 import { labelFilters, periodicOptions, otifKpiCards } from '../../data/secondScreenData';
 
-const SecondScreenDashboard = ({ 
+const NewSecondScreenDashboard = ({ 
   selectedItem, 
   onBack, 
   currentDataSet = 1 
@@ -27,13 +27,13 @@ const SecondScreenDashboard = ({
   const selectionType = getSelectionType();
 
   // Get current data for impact metrics (7 core labels)
-  const impactMetrics = (coreLabels || []).map(label => ({
+  const impactMetrics = coreLabels.map(label => ({
     ...label,
-    ...(label[`dataSet${currentDataSet}`] || {})
+    ...label[`dataSet${currentDataSet}`]
   }));
 
   // Get KPI data based on current data set
-  const currentKpiData = otifKpiCards[`dataSet${currentDataSet}`] || [];
+  const currentKpiData = otifKpiCards[`dataSet${currentDataSet}`];
 
   // Handle periodic selection with Live alert
   const handlePeriodicSelect = (period) => {
@@ -76,7 +76,7 @@ const SecondScreenDashboard = ({
 
   return (
     <div className="space-y-6">
-      {/* 1. Title Section with Periodic Bar */}
+      {/* Header with Title and Periodic Bar */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <div className="flex items-center justify-between">
           {/* Left: Back button and Title */}
@@ -126,7 +126,7 @@ const SecondScreenDashboard = ({
         </div>
       </div>
 
-      {/* 2. Filter Section (for Labels only) */}
+      {/* Filter Buttons for Labels */}
       {selectionType === 'label' && getCurrentFilters().length > 0 && (
         <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
           <h3 className="text-lg font-semibold text-slate-900 mb-4">
@@ -147,10 +147,26 @@ const SecondScreenDashboard = ({
               </button>
             ))}
           </div>
+          {selectedFilters.length > 0 && (
+            <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+              <h4 className="font-medium text-blue-900 mb-2">Selected Filters:</h4>
+              <div className="space-y-2">
+                {selectedFilters.map(filterId => {
+                  const filter = getCurrentFilters().find(f => f.id === filterId);
+                  return filter ? (
+                    <div key={filterId} className="text-sm">
+                      <span className="font-medium text-blue-800">{filter.name}:</span>
+                      <span className="text-blue-700 ml-2">{filter.description}</span>
+                    </div>
+                  ) : null;
+                })}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
-      {/* 3. Sankey Diagram */}
+      {/* Sankey Diagram */}
       <EnhancedSankeyDiagram
         selectedType={selectionType}
         onNodeClick={() => {}}
@@ -158,7 +174,7 @@ const SecondScreenDashboard = ({
         currentDataSet={currentDataSet}
       />
 
-      {/* 4. Impact Metrics / Stats */}
+      {/* Impact Metrics - 7 Core Labels (for KPI) or Related KPIs (for Labels/Categories) */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-6">
           {selectionType === 'kpi' ? 'Impact Metrics - Core Labels' : 'Related KPIs'}
@@ -229,7 +245,7 @@ const SecondScreenDashboard = ({
         )}
       </div>
 
-      {/* 5. KPI Cards */}
+      {/* KPI Cards with Charts */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
         <h3 className="text-lg font-semibold text-slate-900 mb-6">
           {selectionType === 'kpi' ? 'OTIF Related KPIs' : `${selectedItem?.name || 'Selected'} Performance Metrics`}
@@ -240,4 +256,4 @@ const SecondScreenDashboard = ({
   );
 };
 
-export default SecondScreenDashboard;
+export default NewSecondScreenDashboard;

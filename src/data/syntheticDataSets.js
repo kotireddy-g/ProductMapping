@@ -1,7 +1,7 @@
 // Two sets of synthetic data for before/after upload simulation
 
 export const dataSet1 = {
-  otifPercentage: 94.2,
+  otifPercentage: 88.9,
   labelCategories: [
     {
       id: 'over-stocking',
@@ -43,7 +43,7 @@ export const dataSet1 = {
 };
 
 export const dataSet2 = {
-  otifPercentage: 96.8,
+  otifPercentage: 97.1,
   labelCategories: [
     {
       id: 'over-stocking',
@@ -89,7 +89,7 @@ export const notifications = {
     {
       id: 'notif-1',
       title: 'OTIF Alert: Critical Level',
-      message: 'Current OTIF at 94.2% - Below target of 98%',
+      message: 'Current OTIF at 88.9% - Below target of 98%',
       type: 'critical',
       timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
       category: 'OTIF'
@@ -131,7 +131,7 @@ export const notifications = {
     {
       id: 'notif-6',
       title: 'OTIF Improved!',
-      message: 'Current OTIF at 96.8% - Significant improvement achieved',
+      message: 'Current OTIF at 97.1% - Significant improvement achieved',
       type: 'success',
       timestamp: new Date(Date.now() - 2 * 60 * 1000), // 2 minutes ago
       category: 'OTIF'
