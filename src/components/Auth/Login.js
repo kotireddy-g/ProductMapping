@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, Lock, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import ExperienceFlowLogo from '../../assets/experienceflow-logo.svg';
 
 const Login = ({ onLogin, onSwitchToSignup }) => {
   const [formData, setFormData] = useState({
@@ -55,8 +56,12 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-2xl p-8">
           <div className="text-center mb-8">
-            <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-2xl mb-4 shadow-lg">
-              <span className="text-3xl">🏥</span>
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 shadow-lg">
+              <img 
+                src={ExperienceFlowLogo} 
+                alt="ExperienceFlow" 
+                className="w-16 h-16 rounded-2xl"
+              />
             </div>
             <h1 className="text-2xl font-bold text-slate-800">ExperienceFlow</h1>
             <p className="text-sm text-slate-500 mt-1">Hospital Pharma Procurement</p>

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
 import ChordDiagram from './ChordDiagram';
 import KpiCards from './KpiCards';
+import RelatedKPIsDrawer from './RelatedKPIsDrawer';
+import KpiDetailDrawer from './KpiDetailDrawer';
 import ForecastReviewPage from '../ForecastReview/ForecastReviewPage';
 import { coreLabels, getPriorityColor } from '../../data/coreLabelsData';
 import { labelFilters, periodicOptions, otifKpiCards } from '../../data/secondScreenData';
@@ -16,6 +18,9 @@ const SecondScreenDashboard = ({
   const [showForecastReview, setShowForecastReview] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
   const [selectedForecastNode, setSelectedForecastNode] = useState(null);
+  const [relatedKPIsDrawerOpen, setRelatedKPIsDrawerOpen] = useState(false);
+  const [kpiDetailDrawerOpen, setKpiDetailDrawerOpen] = useState(false);
+  const [selectedKpiForDetail, setSelectedKpiForDetail] = useState(null);
 
   // Validate data consistency on component mount
   React.useEffect(() => {
@@ -81,6 +86,17 @@ const SecondScreenDashboard = ({
     console.log('Right node clicked for drill-down:', node);
   };
 
+  // Handle KPI card click
+  const handleKpiClick = (kpi) => {
+    setSelectedKpiForDetail(kpi);
+    setKpiDetailDrawerOpen(true);
+  };
+
+  // Handle Related KPIs click
+  const handleRelatedKPIsClick = () => {
+    setRelatedKPIsDrawerOpen(true);
+  };
+
   if (showForecastReview) {
     return (
       <ForecastReviewPage 
@@ -107,11 +123,21 @@ const SecondScreenDashboard = ({
               <ArrowLeft className="w-5 h-5 text-slate-600" />
             </button>
             <div>
-              <h1 className="text-2xl font-bold text-slate-900">
-                {selectionType === 'kpi' && 'OTIF KPI Analysis'}
-                {selectionType === 'category' && `${selectedItem?.name || 'Category'} Analysis`}
-                {selectionType === 'label' && `${selectedItem?.name || 'Label'} Analysis`}
-              </h1>
+              <div className="flex items-center gap-4">
+                <h1 className="text-2xl font-bold text-slate-900">
+                  {selectionType === 'kpi' && 'OTIF KPI Analysis'}
+                  {selectionType === 'category' && `${selectedItem?.name || 'Category'} Analysis`}
+                  {selectionType === 'label' && `${selectedItem?.name || 'Label'} Analysis`}
+                </h1>
+                {selectionType === 'kpi' && (
+                  <div className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="w-2 h-2 bg-yellow-500 rounded-full animate-pulse"></div>
+                    <span className="text-lg font-bold text-yellow-700">
+                      88.9%
+                    </span>
+                  </div>
+                )}
+              </div>
               <p className="text-sm text-slate-500 mt-1">
                 {selectionType === 'kpi' && 'On-Time In-Full delivery performance metrics'}
                 {selectionType === 'category' && `Analysis for ${selectedItem?.name || 'selected category'}`}
@@ -174,13 +200,27 @@ const SecondScreenDashboard = ({
         onLeftNodeClick={handleForecastClick}
         onRightNodeClick={handleRightNodeClick}
         currentDataSet={currentDataSet}
+        selectedPeriod={selectedPeriod}
+        selectedFilters={selectedFilters}
+        selectionType={selectionType}
+        selectedItem={selectedItem}
       />
 
       {/* 4. Impact Metrics / Stats */}
       <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-        <h3 className="text-lg font-semibold text-slate-900 mb-6">
-          {selectionType === 'kpi' ? 'Impact Metrics - Core Labels' : 'Related KPIs'}
-        </h3>
+        <div className="flex items-center justify-between mb-6">
+          <h3 className="text-lg font-semibold text-slate-900">
+            {selectionType === 'kpi' ? 'Impact Metrics - Core Labels' : 'Related KPIs'}
+          </h3>
+          {selectionType !== 'kpi' && (
+            <button
+              onClick={handleRelatedKPIsClick}
+              className="text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+            >
+              View Details →
+            </button>
+          )}
+        </div>
         
         {selectionType === 'kpi' ? (
           // Show 7 core labels for KPI
@@ -252,8 +292,27 @@ const SecondScreenDashboard = ({
         <h3 className="text-lg font-semibold text-slate-900 mb-6">
           {selectionType === 'kpi' ? 'OTIF Related KPIs' : `${selectedItem?.name || 'Selected'} Performance Metrics`}
         </h3>
-        <KpiCards kpiData={currentKpiData} />
+        <KpiCards 
+          kpiData={currentKpiData} 
+          onKpiClick={handleKpiClick}
+        />
       </div>
+
+      {/* Related KPIs Drawer */}
+      <RelatedKPIsDrawer
+        isOpen={relatedKPIsDrawerOpen}
+        onClose={() => setRelatedKPIsDrawerOpen(false)}
+      />
+
+      {/* KPI Detail Drawer */}
+      <KpiDetailDrawer
+        isOpen={kpiDetailDrawerOpen}
+        onClose={() => {
+          setKpiDetailDrawerOpen(false);
+          setSelectedKpiForDetail(null);
+        }}
+        selectedKpi={selectedKpiForDetail}
+      />
     </div>
   );
 };

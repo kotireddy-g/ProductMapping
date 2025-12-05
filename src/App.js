@@ -9,8 +9,11 @@ import ForecastModal from './components/VendorForecast/ForecastModal';
 import UploadModal from './components/Upload/UploadModal';
 import NotificationBell from './components/Notifications/NotificationBell';
 import NotificationToast from './components/Notifications/NotificationToast';
+import GlobalSearchBar from './components/GlobalSearchBar';
 import { TrendingUp, User, LogOut, Upload, Bell } from 'lucide-react';
 import { dataSet1, dataSet2, notifications } from './data/syntheticDataSets';
+import { getOtifColor } from './utils/otifColors';
+import ExperienceFlowLogo from './assets/experienceflow-logo.svg';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -32,6 +35,11 @@ function App() {
   // Notifications
   const [currentNotifications, setCurrentNotifications] = useState([]);
   const [toastNotifications, setToastNotifications] = useState([]);
+  
+  // Global search state
+  const [globalSearchQuery, setGlobalSearchQuery] = useState('');
+  const [showGlobalSuggestions, setShowGlobalSuggestions] = useState(false);
+  const [globalFilteredSuggestions, setGlobalFilteredSuggestions] = useState([]);
 
   const handleLogin = (user) => {
     setCurrentUser(user);
@@ -137,6 +145,48 @@ function App() {
     setToastNotifications(prev => prev.filter(n => n.id !== notificationId));
   };
 
+  const addToastNotification = (notification) => {
+    const id = Date.now();
+    const newNotification = { ...notification, id };
+    setToastNotifications(prev => [...prev, newNotification]);
+    
+    setTimeout(() => {
+      setToastNotifications(prev => prev.filter(n => n.id !== id));
+    }, 5000);
+  };
+
+  // Global search handlers
+  const handleGlobalSearchChange = (e) => {
+    const query = e.target.value;
+    setGlobalSearchQuery(query);
+    
+    if (query.length > 0) {
+      // Import search suggestions from LabelDashboard data
+      import('./data/coreLabelsData').then(({ searchSuggestions }) => {
+        const filtered = searchSuggestions.filter(suggestion =>
+          suggestion.name.toLowerCase().includes(query.toLowerCase()) ||
+          suggestion.description.toLowerCase().includes(query.toLowerCase())
+        );
+        setGlobalFilteredSuggestions(filtered.slice(0, 8));
+        setShowGlobalSuggestions(true);
+      });
+    } else {
+      setShowGlobalSuggestions(false);
+      setGlobalFilteredSuggestions([]);
+    }
+  };
+
+  const handleGlobalSuggestionSelect = (suggestion) => {
+    setGlobalSearchQuery(suggestion.name);
+    setShowGlobalSuggestions(false);
+    // Navigate based on suggestion
+    handleLabelSelect({ 
+      ...suggestion, 
+      searchType: suggestion.type,
+      searchQuery: suggestion.name 
+    });
+  };
+
   if (!isAuthenticated) {
     if (authView === 'login') {
       return (
@@ -169,8 +219,12 @@ function App() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl flex items-center justify-center shadow-lg">
-                <span className="text-xl">🏥</span>
+              <div className="w-10 h-10 rounded-xl flex items-center justify-center shadow-lg">
+                <img 
+                  src={ExperienceFlowLogo} 
+                  alt="ExperienceFlow" 
+                  className="w-10 h-10 rounded-xl"
+                />
               </div>
               <div>
                 <h1 className="text-xl font-bold bg-gradient-to-r from-slate-800 to-slate-600 bg-clip-text text-transparent">
@@ -181,14 +235,6 @@ function App() {
             </div>
             
             <div className="flex items-center gap-3">
-              {/* OTIF Display */}
-              <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
-                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-                <span className="text-sm font-medium text-green-700">
-                  OTIF: {currentOtif.toFixed(1)}%
-                </span>
-              </div>
-              
               {/* Upload Button */}
               <button
                 onClick={() => setIsUploadOpen(true)}
@@ -235,7 +281,19 @@ function App() {
         </div>
       </header>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      {/* Global Search Bar */}
+      <GlobalSearchBar
+        currentOtif={currentOtif}
+        searchQuery={globalSearchQuery}
+        onSearchChange={handleGlobalSearchChange}
+        showSuggestions={showGlobalSuggestions}
+        filteredSuggestions={globalFilteredSuggestions}
+        onSuggestionSelect={handleGlobalSuggestionSelect}
+        onSearchFocus={() => setShowGlobalSuggestions(globalSearchQuery.length > 0)}
+        onSearchBlur={() => setTimeout(() => setShowGlobalSuggestions(false), 200)}
+      />
+
+      <div className="max-w-7xl mx-auto px-6 py-4">
         {currentScreen === 'first' && (
           <LabelDashboard 
             onLabelSelect={handleLabelSelect} 

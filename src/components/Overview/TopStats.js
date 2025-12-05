@@ -1,5 +1,6 @@
 import React from 'react';
 import { Calendar, TrendingUp, Trash2, ArrowUp, ArrowDown, CheckCircle } from 'lucide-react';
+import { getOtifColorClass } from '../../utils/otifColors';
 
 const TopStats = ({ kpiData }) => {
   const stats = [
@@ -82,7 +83,11 @@ const TopStats = ({ kpiData }) => {
             <div className="flex items-start justify-between mb-2">
               <div>
                 <p className={`${stat.textColor} text-xs font-medium mb-1`}>{stat.label}</p>
-                <p className={`text-2xl font-bold ${stat.valueColor}`}>{stat.value}</p>
+                <p className={`text-2xl font-bold ${
+                  stat.id === 'otif' 
+                    ? getOtifColorClass(kpiData?.otif?.current || 87)
+                    : stat.valueColor
+                }`}>{stat.value}</p>
               </div>
               <div className={`w-10 h-10 bg-gradient-to-br ${stat.gradient} rounded-lg flex items-center justify-center shadow-sm group-hover:scale-110 transition-transform`}>
                 <Icon className="w-5 h-5 text-white" />
