@@ -1,12 +1,12 @@
-# ExperienceFlow Procurement Intelligence Platform
+# ExperienceFlow Hospital Pharmacy Procurement Platform
 
 ## Overview
-ExperienceFlow is a comprehensive multi-vertical procurement intelligence platform supporting Hospitality, Supermarket, and Hospital Pharma sectors. The application features advanced product tracking, performance analytics, and an AI-powered product labeling system using Reinforcement Learning (RLHF).
+ExperienceFlow is a comprehensive Hospital Pharmacy Procurement Intelligence platform featuring advanced medicine tracking, OTIF performance analytics, AI-powered product labeling, and forecast management. Designed for Monday manager meetings with professional visualizations and consistent synthetic data.
 
 ## Project Status
-- **Current State**: Fully functional React application running in Replit environment
+- **Current State**: Fully functional React application ready for demo
 - **Last Updated**: December 5, 2024
-- **Imported From**: GitHub repository
+- **Demo Ready**: Yes - Pre-filled login credentials for quick demo access
 
 ## Technology Stack
 - **Frontend Framework**: React 18.2.0
@@ -14,7 +14,7 @@ ExperienceFlow is a comprehensive multi-vertical procurement intelligence platfo
 - **Styling**: Tailwind CSS 3.3.0
 - **Charts & Visualization**: 
   - Recharts 2.10.3
-  - D3.js 7.8.5
+  - D3.js 7.8.5 (Animated chord diagrams)
 - **Icons**: Lucide React 0.263.1
 - **CSS Processing**: PostCSS 8.4.31, Autoprefixer 10.4.16
 
@@ -23,107 +23,125 @@ ExperienceFlow is a comprehensive multi-vertical procurement intelligence platfo
 ### Directory Structure
 ```
 src/
-├── components/          # React components organized by feature
-│   ├── Auth/           # Login and Signup components
-│   ├── FirstScreen/    # Label Dashboard and Cards
-│   ├── ForecastReview/ # Forecast adjustment and review
-│   ├── Notifications/  # Notification Bell and Toast
-│   ├── Overview/       # KPI sections and consumption stats
-│   ├── ProductJourney/ # Live circuit flow visualization
-│   ├── SecondScreen/   # Enhanced dashboards and diagrams
-│   ├── ThirdScreen/    # RCA (Root Cause Analysis) screen
-│   ├── Upload/         # Upload modal
-│   └── VendorForecast/ # Forecast modal for vendors
-├── data/               # Mock data and synthetic datasets
-├── utils/              # Utility functions (color schemes, etc.)
-├── App.js             # Main application component
-├── index.js           # Entry point
-└── index.css          # Global styles with Tailwind
+├── components/
+│   ├── Auth/              # Login (with demo access) and Signup
+│   ├── Dashboard/         # Main dashboard components
+│   │   ├── MainDashboard.js       # 3-section tabbed dashboard
+│   │   ├── OTIFSection.js         # OTIF metrics and chord diagram
+│   │   ├── LabelsSection.js       # Medicine labels management
+│   │   ├── ForecastSection.js     # Forecast overview
+│   │   ├── AnimatedChordDiagram.js # D3 animated visualization
+│   │   ├── ProductJourneyScreen.js # Circuit flow visualization
+│   │   └── RCAScreen.js           # Root Cause Analysis
+│   ├── Layout/            # Header, NotificationPanel, UploadModal
+│   ├── ForecastReview/    # Detailed forecast adjustment
+│   └── [Legacy screens]/  # Previous screen components
+├── data/
+│   └── unifiedPharmaData.js  # Centralized synthetic data
+├── utils/                 # Utility functions
+├── App.js                # Main application with routing
+├── index.js              # Entry point
+└── index.css             # Global styles with Tailwind
 ```
 
 ### Key Features
-1. **Product Journey Tracking**: Global search, advanced filtering, performance metrics across multiple timeframes
-2. **Bouncing Bubbles Visualization**: Interactive animated status indicators
-3. **Detail Analysis Drawer**: Comprehensive product performance with trend graphs
-4. **RL-Powered Product Labeling**: AI-suggested labels with confidence scores
-5. **Multi-Vertical Support**: Hospitality, Supermarket, and Hospital Pharma
-6. **Performance Metrics**: Hourly, Daily, Weekly, Monthly, Quarterly, Yearly tracking
+
+#### 1. Three-Section Dashboard
+- **OTIF Section**: On-Time In-Full metrics, animated chord diagram, OTIF reasons table, 4 KPI cards
+- **Labels Section**: 7 core medicine labels with sub-labels, label performance KPIs
+- **Forecast Section**: Medicine category cards, forecast accuracy metrics, 4 KPI cards
+
+#### 2. Product Journey Visualization
+- Animated canvas-based circuit flow
+- Real-time particle animations
+- Category-specific data (Cardiac, Emergency, Antibiotics, Surgical)
+- Distribution and consumption nodes
+
+#### 3. Root Cause Analysis (RCA)
+- Context-aware causes and recommendations
+- Supports OTIF reason drill-down (Supplier Delay, Transportation, Stock Unavailability, etc.)
+- Supports label-specific analysis
+- Priority matrix visualization
+
+#### 4. Interactive Chord Diagram
+- D3-based animated connections
+- Left side: Medicine categories (6 categories, 1,630 total items)
+- Right side: Hierarchical hospital departments (3 levels)
+- Drill-down navigation with breadcrumbs
+
+#### 5. Notifications & Uploads
+- Categorized notification panel (Critical, Warning, Info)
+- Upload Forecast modal with file selection
+
+## Demo Access
+- **Email**: admin@hospital.com
+- **Password**: password123
+- **Quick Demo Button**: One-click access to dashboard
+
+## Data Structure
+
+### Medicine Categories (Total: 1,630 items)
+1. Emergency Medicines: 350 items
+2. OT Medicines: 180 items
+3. Ward Medicines: 420 items
+4. Daycare Medicines: 95 items
+5. General Medicines: 510 items
+6. Implant Medicines: 75 items
+
+### Hospital Departments (Hierarchical)
+- Level 1: 8 main departments
+- Level 2: Sub-departments per main department
+- Level 3: Specific units/areas
+
+### OTIF Metrics
+- Overall OTIF: 92.4%
+- On-Time Delivery: 94.2%
+- In-Full Delivery: 93.8%
+- Perfect Order Rate: 89.6%
 
 ## Replit Configuration
 
-### Environment Variables (Development)
-- `PORT`: 5000 (required for Replit webview)
-- `HOST`: 0.0.0.0 (binds to all interfaces)
-- `DANGEROUSLY_DISABLE_HOST_CHECK`: true (allows Replit proxy)
+### Environment Variables
+- `PORT`: 5000
+- `HOST`: 0.0.0.0
+- `DANGEROUSLY_DISABLE_HOST_CHECK`: true
 
 ### Workflow
 - **Name**: Start application
 - **Command**: `npm start`
 - **Port**: 5000
-- **Output Type**: webview (displays in Replit preview)
+- **Output Type**: webview
 
-### Deployment Configuration
+### Deployment
 - **Type**: static
 - **Build Command**: `npm run build`
 - **Public Directory**: build
-- **Homepage**: /product-mapping
-
-## Development
-
-### Running Locally
-The application is configured to run automatically in Replit. The workflow "Start application" starts the development server on port 5000.
-
-### Scripts
-- `npm start` - Start development server (configured for port 5000)
-- `npm run build` - Build for production
-- `npm test` - Run tests
-- `npm run eject` - Eject from Create React App
-
-### Known ESLint Warnings
-The application compiles successfully with some ESLint warnings for:
-- Unused imports and variables
-- Missing useEffect dependencies
-- Anonymous default exports
-
-These are non-critical and don't affect functionality.
-
-## Data & Visualizations
-
-### Mock Data Includes
-- 20 products across 8 categories
-- 8 hospitality locations
-- 10 RL-labeled products with various statuses
-- Synthetic data for chord diagrams, KPI trends, and forecasting
-
-### Color Coding System
-- **Green**: Normal consumption (80-120% of expected)
-- **Yellow**: Under-consumed (below 80% of expected)
-- **Red**: Over-consumed (above 120% of expected)
 
 ## Recent Changes
-- **December 5, 2024**: Initial import and Replit environment setup
-  - Installed all npm dependencies
-  - Configured environment variables for Replit
-  - Set up workflow for development server on port 5000
-  - Configured static deployment with build output
-  - Verified application running with login screen
+- **December 5, 2024 (Latest)**:
+  - Fixed ProductJourneyScreen to respect passed category drill-down
+  - Added context-aware RCA data with comprehensive cause/recommendation mappings
+  - Updated chord diagram to use consistent data connections
+  - Added Quick Demo Access button to login
+  - Pre-filled demo credentials for fast access
+  - Fixed ForecastReviewPage useEffect dependency warning
 
-## User Preferences
-None documented yet.
+- **December 5, 2024 (Initial)**:
+  - Initial import and Replit environment setup
+  - Created unified synthetic data structure
+  - Built 3-section dashboard architecture
+  - Implemented all core visualizations
 
-## Future Enhancements
-- Real-time data integration (currently using mock data)
-- Advanced analytics and reporting
-- Multi-user collaboration features
-- Custom alert thresholds
-- Export functionality
-- Mobile app version
-- API integration with POS systems
+## Known ESLint Warnings
+- Unused imports/variables (non-critical)
+- These don't affect functionality
 
-## Support & Documentation
-See the following files for additional information:
-- `README.md` - Project overview and features
-- `QUICK_START.md` - Getting started guide
-- `FEATURES.md` - Detailed feature documentation
-- `API_SPECIFICATIONS.md` - API documentation
-- `SETUP.md` - Installation and deployment guide
+## Scripts
+- `npm start` - Development server on port 5000
+- `npm run build` - Production build
+- `npm test` - Run tests
+
+## Color Coding System
+- **Green**: Good performance (>=90%)
+- **Yellow**: Medium/Warning (80-90%)
+- **Red**: Critical (<80%)
