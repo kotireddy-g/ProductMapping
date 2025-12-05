@@ -3,7 +3,22 @@ import { ArrowLeft, Heart, AlertTriangle, Pill, Scissors } from 'lucide-react';
 import { productJourneyData } from '../../data/unifiedPharmaData';
 
 const ProductJourneyScreen = ({ category, onBack }) => {
-  const [selectedProduct, setSelectedProduct] = useState(productJourneyData.categories[0]);
+  const initialCategory = () => {
+    if (category?.name) {
+      const categoryMap = {
+        'Emergency Medicines': 'Emergency',
+        'OT Medicines': 'Surgical',
+        'Ward Medicines': 'Antibiotics',
+        'Daycare Medicines': 'Cardiac',
+        'General Medicines': 'Antibiotics',
+        'Implant Medicines': 'Cardiac'
+      };
+      return categoryMap[category.name] || productJourneyData.categories[0];
+    }
+    return productJourneyData.categories[0];
+  };
+  
+  const [selectedProduct, setSelectedProduct] = useState(initialCategory());
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const particlesRef = useRef([]);

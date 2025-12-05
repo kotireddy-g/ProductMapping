@@ -1,6 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
-import { medicineCategories, hospitalDepartments } from '../../data/unifiedPharmaData';
+import { medicineCategories, hospitalDepartments, chordConnections } from '../../data/unifiedPharmaData';
 
 const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLevel }) => {
   const svgRef = useRef(null);
@@ -52,11 +52,14 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
     const connections = [];
     leftNodes.forEach(left => {
       rightNodes.forEach(right => {
-        const strength = 0.3 + Math.random() * 0.7;
+        const existingConnection = chordConnections.find(
+          c => c.source === left.id && c.target === right.id
+        );
+        const strength = existingConnection ? existingConnection.value / 120 : 0.3 + (left.itemCount / 1000);
         connections.push({
           source: left,
           target: right,
-          strength,
+          strength: Math.min(1, strength),
           color: left.color
         });
       });

@@ -534,7 +534,95 @@ const rcaData = {
       { id: 2, action: 'Increase safety stock levels', priority: 'Medium', effort: 'Low', timeline: '1 month' },
       { id: 3, action: 'Implement supplier scorecards', priority: 'High', effort: 'Medium', timeline: '2 months' }
     ]
+  },
+  transportationIssues: {
+    causes: [
+      { id: 1, cause: 'Cold Chain Failure', impact: 'High', probability: 45 },
+      { id: 2, cause: 'Route Optimization Issues', impact: 'Medium', probability: 55 },
+      { id: 3, cause: 'Vehicle Breakdown', impact: 'Medium', probability: 35 },
+      { id: 4, cause: 'Traffic Delays', impact: 'Low', probability: 70 }
+    ],
+    recommendations: [
+      { id: 1, action: 'Upgrade temperature monitoring systems', priority: 'High', effort: 'Medium', timeline: '2 months' },
+      { id: 2, action: 'Implement GPS tracking', priority: 'Medium', effort: 'Low', timeline: '1 month' },
+      { id: 3, action: 'Partner with backup carriers', priority: 'High', effort: 'Medium', timeline: '1 month' }
+    ]
+  },
+  stockUnavailability: {
+    causes: [
+      { id: 1, cause: 'Demand Forecast Error', impact: 'High', probability: 60 },
+      { id: 2, cause: 'Safety Stock Too Low', impact: 'High', probability: 50 },
+      { id: 3, cause: 'Lead Time Variability', impact: 'Medium', probability: 45 },
+      { id: 4, cause: 'Seasonal Demand Spike', impact: 'Medium', probability: 40 }
+    ],
+    recommendations: [
+      { id: 1, action: 'Improve demand forecasting model', priority: 'High', effort: 'High', timeline: '4 months' },
+      { id: 2, action: 'Increase safety stock for critical items', priority: 'High', effort: 'Low', timeline: '2 weeks' },
+      { id: 3, action: 'Implement vendor-managed inventory', priority: 'Medium', effort: 'High', timeline: '6 months' }
+    ]
+  },
+  qualityHold: {
+    causes: [
+      { id: 1, cause: 'Batch Rejection', impact: 'High', probability: 40 },
+      { id: 2, cause: 'Documentation Incomplete', impact: 'Medium', probability: 55 },
+      { id: 3, cause: 'Temperature Excursion', impact: 'High', probability: 35 },
+      { id: 4, cause: 'Regulatory Compliance Issue', impact: 'High', probability: 25 }
+    ],
+    recommendations: [
+      { id: 1, action: 'Strengthen supplier quality audits', priority: 'High', effort: 'Medium', timeline: '3 months' },
+      { id: 2, action: 'Automate document verification', priority: 'Medium', effort: 'Medium', timeline: '2 months' },
+      { id: 3, action: 'Install real-time temperature alerts', priority: 'High', effort: 'Low', timeline: '1 month' }
+    ]
+  },
+  documentationErrors: {
+    causes: [
+      { id: 1, cause: 'Manual Data Entry Errors', impact: 'Medium', probability: 65 },
+      { id: 2, cause: 'Missing Certificates', impact: 'Medium', probability: 45 },
+      { id: 3, cause: 'Invoice Discrepancies', impact: 'Low', probability: 55 },
+      { id: 4, cause: 'System Integration Issues', impact: 'Medium', probability: 30 }
+    ],
+    recommendations: [
+      { id: 1, action: 'Implement barcode scanning', priority: 'High', effort: 'Low', timeline: '1 month' },
+      { id: 2, action: 'Create document checklist automation', priority: 'Medium', effort: 'Low', timeline: '2 weeks' },
+      { id: 3, action: 'Integrate ERP with supplier systems', priority: 'Medium', effort: 'High', timeline: '4 months' }
+    ]
+  },
+  labelSpecific: {
+    causes: [
+      { id: 1, cause: 'Incorrect Label Classification', impact: 'High', probability: 40 },
+      { id: 2, cause: 'Outdated Label Information', impact: 'Medium', probability: 50 },
+      { id: 3, cause: 'Missing Sub-Label Assignment', impact: 'Medium', probability: 35 },
+      { id: 4, cause: 'Category Overlap Issues', impact: 'Low', probability: 45 }
+    ],
+    recommendations: [
+      { id: 1, action: 'Review and update label taxonomy', priority: 'High', effort: 'Medium', timeline: '2 months' },
+      { id: 2, action: 'Automate label validation rules', priority: 'Medium', effort: 'Medium', timeline: '3 months' },
+      { id: 3, action: 'Train staff on label protocols', priority: 'Medium', effort: 'Low', timeline: '2 weeks' }
+    ]
   }
+};
+
+const getRCADataForContext = (contextData) => {
+  if (!contextData) return rcaData.supplierDelay;
+  
+  if (contextData.type === 'otif_reason') {
+    const reasonKey = contextData.data?.reason?.toLowerCase().replace(/\s+/g, '') || 'supplierDelay';
+    const keyMap = {
+      'supplierdelay': 'supplierDelay',
+      'transportationissues': 'transportationIssues',
+      'stockunavailability': 'stockUnavailability',
+      'qualityhold': 'qualityHold',
+      'documentationerrors': 'documentationErrors',
+      'other': 'supplierDelay'
+    };
+    return rcaData[keyMap[reasonKey] || 'supplierDelay'];
+  }
+  
+  if (contextData.type === 'label') {
+    return rcaData.labelSpecific;
+  }
+  
+  return rcaData.supplierDelay;
 };
 
 export {
@@ -552,5 +640,6 @@ export {
   productJourneyData,
   notifications,
   rcaData,
+  getRCADataForContext,
   generateTrendData
 };

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Filter, Download, RefreshCw, GitBranch } from 'lucide-react';
 import { medicineCategories } from '../../data/consistentSyntheticData';
 import ForecastAdjustmentDrawer from './ForecastAdjustmentDrawer';
@@ -15,30 +15,6 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
   const [productJourneyOpen, setProductJourneyOpen] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [forecastData, setForecastData] = useState([]);
-
-  // Get medicines from the selected category with consistent data
-  const getMedicinesForCategory = (categoryName) => {
-    const category = Object.values(medicineCategories).find(cat => cat.name === categoryName);
-    if (!category) return [];
-    
-    return category.medicines.map((medicine, index) => ({
-      id: index + 1,
-      sku: medicine.name,
-      code: `${medicine.category.toUpperCase()}-${String(index + 1).padStart(3, '0')}`,
-      location: getLocationForMedicine(medicine.category),
-      forecast: `${medicine.quantity} ${getUnitForMedicine(medicine.name)}`,
-      currentPlan: `${Math.floor(medicine.quantity * 0.9)} ${getUnitForMedicine(medicine.name)}`,
-      keyKpis: { 
-        otif: medicine.otif >= 90 ? 'High' : medicine.otif >= 80 ? 'Medium' : 'Low',
-        expiry: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Medium' : 'Low'
-      },
-      delta: getDeltaMessage(medicine.otif),
-      status: medicine.otif >= 90 ? 'low' : medicine.otif >= 80 ? 'medium' : 'critical',
-      priority: medicine.otif >= 90 ? 'LOW' : medicine.otif >= 80 ? 'MEDIUM' : 'CRITICAL',
-      action: 'Review / Override',
-      actualOtif: medicine.otif
-    }));
-  };
 
   const getLocationForMedicine = (category) => {
     const locations = {
@@ -68,13 +44,36 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
     return 'Critical - immediate action required';
   };
 
-  // Initialize forecast data based on selected node
+  // Get medicines from the selected category with consistent data
+  const getMedicinesForCategory = useCallback((categoryName) => {
+    const category = Object.values(medicineCategories).find(cat => cat.name === categoryName);
+    if (!category) return [];
+    
+    return category.medicines.map((medicine, index) => ({
+      id: index + 1,
+      sku: medicine.name,
+      code: `${medicine.category.toUpperCase()}-${String(index + 1).padStart(3, '0')}`,
+      location: getLocationForMedicine(medicine.category),
+      forecast: `${medicine.quantity} ${getUnitForMedicine(medicine.name)}`,
+      currentPlan: `${Math.floor(medicine.quantity * 0.9)} ${getUnitForMedicine(medicine.name)}`,
+      keyKpis: { 
+        otif: medicine.otif >= 90 ? 'High' : medicine.otif >= 80 ? 'Medium' : 'Low',
+        expiry: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Medium' : 'Low'
+      },
+      delta: getDeltaMessage(medicine.otif),
+      status: medicine.otif >= 90 ? 'low' : medicine.otif >= 80 ? 'medium' : 'critical',
+      priority: medicine.otif >= 90 ? 'LOW' : medicine.otif >= 80 ? 'MEDIUM' : 'CRITICAL',
+      action: 'Review / Override',
+      actualOtif: medicine.otif
+    }));
+  }, []);
+
   React.useEffect(() => {
     const initialData = selectedNode ? 
       getMedicinesForCategory(selectedNode.name) : 
-      getMedicinesForCategory('Emergency Medicines'); // Default to Emergency Medicines
+      getMedicinesForCategory('Emergency Medicines');
     setForecastData(initialData);
-  }, [selectedNode]);
+  }, [selectedNode, getMedicinesForCategory]);
 
   // Handle forecast adjustment
   const handleForecastAdjustment = (adjustment) => {

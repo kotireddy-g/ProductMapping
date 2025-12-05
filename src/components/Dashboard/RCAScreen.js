@@ -1,12 +1,23 @@
-import React, { useState } from 'react';
-import { ArrowLeft, AlertTriangle, CheckCircle, Clock, Target, Lightbulb, ChevronRight } from 'lucide-react';
-import { rcaData } from '../../data/unifiedPharmaData';
+import React, { useState, useMemo } from 'react';
+import { ArrowLeft, AlertTriangle, Clock, Target, Lightbulb, ChevronRight } from 'lucide-react';
+import { getRCADataForContext } from '../../data/unifiedPharmaData';
 
 const RCAScreen = ({ data, onBack }) => {
   const [selectedCause, setSelectedCause] = useState(null);
 
-  const causes = rcaData.supplierDelay.causes;
-  const recommendations = rcaData.supplierDelay.recommendations;
+  const contextualRCAData = useMemo(() => getRCADataForContext(data), [data]);
+  const causes = contextualRCAData.causes;
+  const recommendations = contextualRCAData.recommendations;
+  
+  const getContextTitle = () => {
+    if (data?.type === 'otif_reason') {
+      return data.data?.reason || 'OTIF Issue';
+    }
+    if (data?.type === 'label') {
+      return data.subLabel?.name || data.label?.name || 'Label Analysis';
+    }
+    return 'Analysis Details';
+  };
 
   const getImpactColor = (impact) => {
     switch (impact) {
@@ -38,8 +49,7 @@ const RCAScreen = ({ data, onBack }) => {
             <div>
               <h1 className="text-xl font-bold text-white">Root Cause Analysis & Recommendations</h1>
               <p className="text-sm text-slate-400">
-                {data?.type === 'otif_reason' ? `Analyzing: ${data.data?.reason || data.data?.category}` : 
-                 data?.type === 'label' ? `Label: ${data.subLabel?.name}` : 'Analysis Details'}
+                Analyzing: {getContextTitle()}
               </p>
             </div>
           </div>
