@@ -4,8 +4,8 @@ import ExperienceFlowLogo from '../../assets/experienceflow-logo.svg';
 
 const Login = ({ onLogin, onSwitchToSignup }) => {
   const [formData, setFormData] = useState({
-    email: '',
-    password: ''
+    email: 'admin@hospital.com',
+    password: 'password123'
   });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
@@ -40,7 +40,11 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
     setTimeout(() => {
       setIsLoading(false);
       onLogin({ email: formData.email, name: formData.email.split('@')[0] });
-    }, 1000);
+    }, 500);
+  };
+
+  const handleQuickDemo = () => {
+    onLogin({ email: 'admin@hospital.com', name: 'Admin' });
   };
 
   const handleChange = (e) => {
@@ -153,6 +157,16 @@ const Login = ({ onLogin, onSwitchToSignup }) => {
               )}
             </button>
           </form>
+
+          <div className="mt-4">
+            <button
+              type="button"
+              onClick={handleQuickDemo}
+              className="w-full py-3 bg-slate-100 text-slate-700 rounded-xl font-semibold hover:bg-slate-200 transition-all border border-slate-200"
+            >
+              Quick Demo Access
+            </button>
+          </div>
 
           <div className="mt-6 text-center">
             <p className="text-slate-600">
