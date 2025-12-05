@@ -1,5 +1,8 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Filter, Download, RefreshCw } from 'lucide-react';
+import { ArrowLeft, Filter, Download, RefreshCw, GitBranch } from 'lucide-react';
+import { medicineCategories } from '../../data/consistentSyntheticData';
+import ForecastAdjustmentDrawer from './ForecastAdjustmentDrawer';
+import ProductJourneyModal from './ProductJourneyModal';
 
 const ForecastReviewPage = ({ onBack, selectedNode }) => {
   const [filters, setFilters] = useState({
@@ -8,62 +11,96 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
     priority: 'All',
     status: 'All'
   });
+  const [adjustmentDrawerOpen, setAdjustmentDrawerOpen] = useState(false);
+  const [productJourneyOpen, setProductJourneyOpen] = useState(false);
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [forecastData, setForecastData] = useState([]);
 
-  // Sample forecast data
-  const forecastData = [
-    {
-      id: 1,
-      sku: 'Inj. Ceftriaxone 1g',
-      code: 'INJ-CEF-001',
-      location: 'ICU Pharmacy – Hospital A',
-      forecast: '420 vials',
-      currentPlan: '380 vials',
-      keyKpis: { otif: 'High', expiry: 'Low' },
-      delta: 'Demand trend +23% vs last week',
-      status: 'critical',
-      priority: 'CRITICAL',
-      action: 'Review / Override'
-    },
-    {
-      id: 2,
-      sku: 'Tab. Paracetamol 500mg',
-      code: 'TAB-PARA-500',
-      location: 'Ward 3 – Hospital A',
-      forecast: '2,400 tablets',
-      currentPlan: '2,400 tablets',
-      keyKpis: { otif: 'Low', expiry: 'Low' },
-      delta: 'Stable',
-      status: 'medium',
-      priority: 'MEDIUM',
-      action: 'Review / Override'
-    },
-    {
-      id: 3,
-      sku: 'Multivitamin Syrup 200ml',
-      code: 'SYR-MULT-200',
-      location: 'OPD Pharmacy – Hospital A',
-      forecast: '800 bottles',
-      currentPlan: '600 bottles',
-      keyKpis: { otif: 'Low', expiry: 'High' },
-      delta: 'Campaign ended',
-      status: 'low',
-      priority: 'LOW',
-      action: 'Review / Override'
-    },
-    {
-      id: 4,
-      sku: 'Inj. Morphine 10mg',
-      code: 'INJ-MOR-010',
-      location: 'ICU – Hospital A',
-      forecast: '150 vials',
-      currentPlan: '120 vials',
-      keyKpis: { otif: 'Medium', expiry: 'Low' },
-      delta: 'Usage pattern changed',
-      status: 'medium',
-      priority: 'MEDIUM',
-      action: 'Review / Override'
-    }
-  ];
+  // Get medicines from the selected category with consistent data
+  const getMedicinesForCategory = (categoryName) => {
+    const category = Object.values(medicineCategories).find(cat => cat.name === categoryName);
+    if (!category) return [];
+    
+    return category.medicines.map((medicine, index) => ({
+      id: index + 1,
+      sku: medicine.name,
+      code: `${medicine.category.toUpperCase()}-${String(index + 1).padStart(3, '0')}`,
+      location: getLocationForMedicine(medicine.category),
+      forecast: `${medicine.quantity} ${getUnitForMedicine(medicine.name)}`,
+      currentPlan: `${Math.floor(medicine.quantity * 0.9)} ${getUnitForMedicine(medicine.name)}`,
+      keyKpis: { 
+        otif: medicine.otif >= 90 ? 'High' : medicine.otif >= 80 ? 'Medium' : 'Low',
+        expiry: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Medium' : 'Low'
+      },
+      delta: getDeltaMessage(medicine.otif),
+      status: medicine.otif >= 90 ? 'low' : medicine.otif >= 80 ? 'medium' : 'critical',
+      priority: medicine.otif >= 90 ? 'LOW' : medicine.otif >= 80 ? 'MEDIUM' : 'CRITICAL',
+      action: 'Review / Override',
+      actualOtif: medicine.otif
+    }));
+  };
+
+  const getLocationForMedicine = (category) => {
+    const locations = {
+      'Emergency': 'Emergency & Critical Care – Hospital A',
+      'OT': 'Operating Theatre – Hospital A', 
+      'Ward': 'Inpatient Ward 3 – Hospital A',
+      'Daycare': 'Oncology Day-care – Hospital A',
+      'General': 'OPD Pharmacy – Hospital A',
+      'Implant': 'Cardiac Cath Lab – Hospital A'
+    };
+    return locations[category] || 'General Ward – Hospital A';
+  };
+
+  const getUnitForMedicine = (medicineName) => {
+    if (medicineName.includes('Tab.')) return 'tablets';
+    if (medicineName.includes('Inj.')) return 'vials';
+    if (medicineName.includes('Syrup')) return 'bottles';
+    if (medicineName.includes('Stent') || medicineName.includes('Prosthesis') || medicineName.includes('Pacemaker')) return 'units';
+    return 'units';
+  };
+
+  const getDeltaMessage = (otif) => {
+    if (otif >= 95) return 'Excellent performance';
+    if (otif >= 90) return 'Good performance, stable';
+    if (otif >= 85) return 'Performance declining';
+    if (otif >= 80) return 'Needs attention';
+    return 'Critical - immediate action required';
+  };
+
+  // Initialize forecast data based on selected node
+  React.useEffect(() => {
+    const initialData = selectedNode ? 
+      getMedicinesForCategory(selectedNode.name) : 
+      getMedicinesForCategory('Emergency Medicines'); // Default to Emergency Medicines
+    setForecastData(initialData);
+  }, [selectedNode]);
+
+  // Handle forecast adjustment
+  const handleForecastAdjustment = (adjustment) => {
+    setForecastData(prev => prev.map(item => 
+      item.id === adjustment.item.id 
+        ? { 
+            ...item, 
+            delta: `Adjusted: ${adjustment.adjustmentType}`,
+            currentPlan: `${adjustment.newQuantity} ${item.currentPlan.split(' ')[1]}`,
+            status: 'updated'
+          }
+        : item
+    ));
+  };
+
+  // Handle Review/Override button click
+  const handleReviewOverride = (item) => {
+    setSelectedItem(item);
+    setAdjustmentDrawerOpen(true);
+  };
+
+  // Handle Flow button click
+  const handleFlowClick = (item) => {
+    setSelectedItem(item);
+    setProductJourneyOpen(true);
+  };
 
   const getStatusColor = (status) => {
     switch (status) {
@@ -196,6 +233,9 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
                     SKU / Item
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Flow
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Location
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -226,6 +266,15 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
                           {item.priority}
                         </span>
                       </div>
+                    </td>
+                    <td className="px-4 py-4">
+                      <button 
+                        onClick={() => handleFlowClick(item)}
+                        className="flex items-center gap-2 px-3 py-2 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-lg text-sm font-medium transition-colors"
+                      >
+                        <GitBranch className="w-4 h-4" />
+                        Flow
+                      </button>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm text-gray-900">{item.location}</div>
@@ -261,7 +310,10 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
                       </div>
                     </td>
                     <td className="px-4 py-4">
-                      <button className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
+                      <button 
+                        onClick={() => handleReviewOverride(item)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                      >
                         {item.action}
                       </button>
                     </td>
@@ -272,6 +324,27 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
           </div>
         </div>
       </div>
+
+      {/* Forecast Adjustment Drawer */}
+      <ForecastAdjustmentDrawer
+        isOpen={adjustmentDrawerOpen}
+        onClose={() => {
+          setAdjustmentDrawerOpen(false);
+          setSelectedItem(null);
+        }}
+        selectedItem={selectedItem}
+        onApply={handleForecastAdjustment}
+      />
+
+      {/* Product Journey Modal */}
+      <ProductJourneyModal
+        isOpen={productJourneyOpen}
+        onClose={() => {
+          setProductJourneyOpen(false);
+          setSelectedItem(null);
+        }}
+        selectedItem={selectedItem}
+      />
     </div>
   );
 };

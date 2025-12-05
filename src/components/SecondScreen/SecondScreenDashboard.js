@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { ArrowLeft } from 'lucide-react';
-import EnhancedSankeyDiagram from './EnhancedSankeyDiagram';
+import ChordDiagram from './ChordDiagram';
 import KpiCards from './KpiCards';
 import ForecastReviewPage from '../ForecastReview/ForecastReviewPage';
 import { coreLabels, getPriorityColor } from '../../data/coreLabelsData';
 import { labelFilters, periodicOptions, otifKpiCards } from '../../data/secondScreenData';
+import { validateDataConsistency } from '../../data/consistentSyntheticData';
 
 const SecondScreenDashboard = ({ 
   selectedItem, 
@@ -14,6 +15,15 @@ const SecondScreenDashboard = ({
   const [selectedPeriod, setSelectedPeriod] = useState('weekly');
   const [showForecastReview, setShowForecastReview] = useState(false);
   const [selectedFilters, setSelectedFilters] = useState([]);
+  const [selectedForecastNode, setSelectedForecastNode] = useState(null);
+
+  // Validate data consistency on component mount
+  React.useEffect(() => {
+    const validation = validateDataConsistency();
+    if (!validation.isBalanced) {
+      console.warn('Data consistency issue detected:', validation);
+    }
+  }, []);
 
   // Determine the type of selection (KPI, Category, or Label)
   const getSelectionType = () => {
@@ -60,16 +70,25 @@ const SecondScreenDashboard = ({
     return labelFilters[labelId] || [];
   };
 
-  // Handle Sankey node click for forecast review
+  // Handle left node click for forecast review
   const handleForecastClick = (node) => {
+    setSelectedForecastNode(node);
     setShowForecastReview(true);
+  };
+
+  // Handle right node click for drill-down
+  const handleRightNodeClick = (node) => {
+    console.log('Right node clicked for drill-down:', node);
   };
 
   if (showForecastReview) {
     return (
       <ForecastReviewPage 
-        onBack={() => setShowForecastReview(false)}
-        selectedNode={null}
+        onBack={() => {
+          setShowForecastReview(false);
+          setSelectedForecastNode(null);
+        }}
+        selectedNode={selectedForecastNode}
       />
     );
   }
@@ -150,11 +169,10 @@ const SecondScreenDashboard = ({
         </div>
       )}
 
-      {/* 3. Sankey Diagram */}
-      <EnhancedSankeyDiagram
-        selectedType={selectionType}
-        onNodeClick={() => {}}
-        onForecastClick={handleForecastClick}
+      {/* 3. Chord Diagram */}
+      <ChordDiagram
+        onLeftNodeClick={handleForecastClick}
+        onRightNodeClick={handleRightNodeClick}
         currentDataSet={currentDataSet}
       />
 
