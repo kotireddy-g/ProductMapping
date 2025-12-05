@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
 import DetailDrawer from './components/DetailDrawer';
@@ -6,7 +6,11 @@ import LabelDashboard from './components/FirstScreen/LabelDashboard';
 import SecondScreenDashboard from './components/SecondScreen/SecondScreenDashboard';
 import RCAScreen from './components/ThirdScreen/RCAScreen';
 import ForecastModal from './components/VendorForecast/ForecastModal';
-import { TrendingUp, User, LogOut } from 'lucide-react';
+import UploadModal from './components/Upload/UploadModal';
+import NotificationBell from './components/Notifications/NotificationBell';
+import NotificationToast from './components/Notifications/NotificationToast';
+import { TrendingUp, User, LogOut, Upload, Bell } from 'lucide-react';
+import { dataSet1, dataSet2, notifications } from './data/syntheticDataSets';
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -19,10 +23,23 @@ function App() {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isForecastOpen, setIsForecastOpen] = useState(false);
+  const [isUploadOpen, setIsUploadOpen] = useState(false);
+  
+  // Data management
+  const [currentDataSet, setCurrentDataSet] = useState(1);
+  const [currentOtif, setCurrentOtif] = useState(dataSet1.otifPercentage);
+  
+  // Notifications
+  const [currentNotifications, setCurrentNotifications] = useState([]);
+  const [toastNotifications, setToastNotifications] = useState([]);
 
   const handleLogin = (user) => {
     setCurrentUser(user);
     setIsAuthenticated(true);
+    // Show initial notifications after login
+    setTimeout(() => {
+      showLoginNotifications();
+    }, 2000);
   };
 
   const handleSignup = (user) => {
@@ -72,6 +89,54 @@ function App() {
     setSelectedProduct(null);
   };
 
+  // Show notifications on login
+  const showLoginNotifications = () => {
+    const notifs = currentDataSet === 1 ? notifications.dataSet1 : notifications.dataSet2;
+    setCurrentNotifications(notifs.map(n => ({ ...n, read: false })));
+    
+    // Show toast notifications one by one
+    notifs.slice(0, 5).forEach((notif, index) => {
+      setTimeout(() => {
+        setToastNotifications(prev => [...prev, { ...notif, read: false }]);
+      }, index * 2000);
+    });
+  };
+
+  // Handle upload completion
+  const handleUploadComplete = () => {
+    const newDataSet = currentDataSet === 1 ? 2 : 1;
+    setCurrentDataSet(newDataSet);
+    setCurrentOtif(newDataSet === 1 ? dataSet1.otifPercentage : dataSet2.otifPercentage);
+    
+    // Update notifications
+    const newNotifs = newDataSet === 1 ? notifications.dataSet1 : notifications.dataSet2;
+    setCurrentNotifications(newNotifs.map(n => ({ ...n, read: false })));
+    
+    // Show success toast notifications
+    setTimeout(() => {
+      newNotifs.slice(0, 3).forEach((notif, index) => {
+        setTimeout(() => {
+          setToastNotifications(prev => [...prev, { ...notif, read: false }]);
+        }, index * 1500);
+      });
+    }, 1000);
+  };
+
+  // Notification handlers
+  const handleMarkAsRead = (notificationId) => {
+    setCurrentNotifications(prev => 
+      prev.map(n => n.id === notificationId ? { ...n, read: true } : n)
+    );
+  };
+
+  const handleDismissNotification = (notificationId) => {
+    setCurrentNotifications(prev => prev.filter(n => n.id !== notificationId));
+  };
+
+  const handleDismissToast = (notificationId) => {
+    setToastNotifications(prev => prev.filter(n => n.id !== notificationId));
+  };
+
   if (!isAuthenticated) {
     if (authView === 'login') {
       return (
@@ -116,12 +181,36 @@ function App() {
             </div>
             
             <div className="flex items-center gap-3">
+              {/* OTIF Display */}
+              <div className="flex items-center gap-2 px-3 py-2 bg-gradient-to-r from-green-50 to-green-100 border border-green-200 rounded-lg">
+                <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                <span className="text-sm font-medium text-green-700">
+                  OTIF: {currentOtif.toFixed(1)}%
+                </span>
+              </div>
+              
+              {/* Upload Button */}
+              <button
+                onClick={() => setIsUploadOpen(true)}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg text-sm font-medium hover:from-blue-600 hover:to-blue-700 transition-all shadow-sm"
+              >
+                <Upload className="w-4 h-4" />
+                Upload Data
+              </button>
+              
+              {/* Notification Bell */}
+              <NotificationBell 
+                notifications={currentNotifications}
+                onMarkAsRead={handleMarkAsRead}
+                onDismiss={handleDismissNotification}
+              />
+              
               <button
                 onClick={() => setIsForecastOpen(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 text-white rounded-lg text-sm font-medium hover:from-purple-600 hover:to-purple-700 transition-all shadow-sm"
               >
                 <TrendingUp className="w-4 h-4" />
-                Vendor Forecast
+                Supplier Forecast
               </button>
               
               <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
@@ -172,6 +261,23 @@ function App() {
         isOpen={isForecastOpen}
         onClose={() => setIsForecastOpen(false)}
       />
+
+      <UploadModal 
+        isOpen={isUploadOpen}
+        onClose={() => setIsUploadOpen(false)}
+        onUploadComplete={handleUploadComplete}
+      />
+
+      {/* Toast Notifications */}
+      <div className="fixed bottom-4 right-4 space-y-2 z-50">
+        {toastNotifications.map((notification) => (
+          <NotificationToast
+            key={notification.id}
+            notification={notification}
+            onDismiss={handleDismissToast}
+          />
+        ))}
+      </div>
     </div>
   );
 }
