@@ -3,13 +3,13 @@ import { Package, TrendingUp, TrendingDown, AlertTriangle, ChevronRight } from '
 import KPICard from './KPICard';
 import { medicineCategories, forecastData, forecastKPIs } from '../../data/unifiedPharmaData';
 
-const ForecastSection = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
+const ForecastSection = ({ onNavigateToRCA, onNavigateToProductJourney, onNavigateToForecastReview }) => {
   const [selectedCategory, setSelectedCategory] = useState(null);
 
   const handleCategoryClick = (category) => {
     setSelectedCategory(category);
-    if (onNavigateToProductJourney) {
-      onNavigateToProductJourney(category);
+    if (onNavigateToForecastReview) {
+      onNavigateToForecastReview(category);
     }
   };
 

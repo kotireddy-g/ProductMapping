@@ -8,6 +8,7 @@ import ToastNotification from './components/Layout/ToastNotification';
 import MainDashboard from './components/Dashboard/MainDashboard';
 import ProductJourneyScreen from './components/Dashboard/ProductJourneyScreen';
 import RCAScreen from './components/Dashboard/RCAScreen';
+import ForecastReviewPage from './components/ForecastReview/ForecastReviewPage';
 import { notifications as initialNotifications } from './data/unifiedPharmaData';
 
 function App() {
@@ -65,6 +66,11 @@ function App() {
   const handleNavigateToProductJourney = (category) => {
     setSelectedCategory(category);
     setCurrentScreen('product-journey');
+  };
+
+  const handleNavigateToForecastReview = (category) => {
+    setSelectedCategory(category);
+    setCurrentScreen('forecast-review');
   };
 
   const handleBackToDashboard = () => {
@@ -137,6 +143,19 @@ function App() {
     );
   }
 
+  if (currentScreen === 'forecast-review') {
+    return (
+      <>
+        <ForecastReviewPage 
+          selectedNode={selectedCategory}
+          onBack={handleBackToDashboard}
+          onNavigateToProductJourney={handleNavigateToProductJourney}
+        />
+        <ToastNotification toasts={toasts} onDismiss={handleDismissToast} />
+      </>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-50">
       <Header 
@@ -150,6 +169,7 @@ function App() {
       <MainDashboard 
         onNavigateToRCA={handleNavigateToRCA}
         onNavigateToProductJourney={handleNavigateToProductJourney}
+        onNavigateToForecastReview={handleNavigateToForecastReview}
       />
 
       <NotificationPanel 

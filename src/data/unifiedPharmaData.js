@@ -160,7 +160,7 @@ const otifMetrics = {
 const coreLabels = [
   {
     id: 'usage_velocity',
-    name: 'Usage / Velocity Labels',
+    name: 'Usage / Velocity',
     count: 133,
     color: '#3b82f6',
     icon: 'TrendingUp',
@@ -168,82 +168,107 @@ const coreLabels = [
       { id: 'fast_moving', name: 'FAST_MOVING', count: 40, description: 'High consumption rate' },
       { id: 'medium_moving', name: 'MEDIUM_MOVING', count: 35, description: 'Moderate consumption' },
       { id: 'slow_moving', name: 'SLOW_MOVING', count: 25, description: 'Low consumption rate' },
-      { id: 'very_slow_moving', name: 'VERY_SLOW_MOVING', count: 15, description: 'Minimal usage' },
+      { id: 'very_slow_moving', name: 'VERY_SLOW_MOVING / NON_MOVING', count: 15, description: 'Minimal usage' },
       { id: 'new_item', name: 'NEW_ITEM', count: 10, description: 'Recently added' },
-      { id: 'obsolete', name: 'OBSOLETE', count: 8, description: 'No longer in use' }
+      { id: 'obsolete', name: 'OBSOLETE / TO_BE_DISCONTINUED', count: 8, description: 'No longer in use' }
     ]
   },
   {
-    id: 'regulatory_formulary',
-    name: 'Regulatory / Formulary Labels',
+    id: 'stock_position',
+    name: 'Stock Position',
     count: 175,
     color: '#8b5cf6',
     icon: 'FileCheck',
     subLabels: [
-      { id: 'formulary', name: 'FORMULARY', count: 120, description: 'Approved formulary' },
-      { id: 'non_formulary', name: 'NON_FORMULARY', count: 30, description: 'Non-formulary item' },
-      { id: 'restricted_use', name: 'RESTRICTED_USE', count: 25, description: 'Limited authorization' }
+      { id: 'stockout', name: 'STOCKOUT / NO_STOCK', count: 15, description: 'Out of stock' },
+      { id: 'critical_low_stock', name: 'CRITICAL_LOW_STOCK', count: 25, description: 'Critically low levels' },
+      { id: 'low_stock', name: 'LOW_STOCK', count: 30, description: 'Below minimum levels' },
+      { id: 'healthy_stock', name: 'HEALTHY_STOCK', count: 65, description: 'Optimal stock levels' },
+      { id: 'overstock', name: 'OVERSTOCK', count: 20, description: 'Above maximum levels' },
+      { id: 'excess_stock', name: 'EXCESS_STOCK / SURPLUS', count: 12, description: 'Excessive inventory' },
+      { id: 'blocked_stock', name: 'BLOCKED_STOCK', count: 5, description: 'Blocked inventory' },
+      { id: 'quarantined_stock', name: 'QUARANTINED_STOCK', count: 3, description: 'Quality hold' }
     ]
   },
   {
-    id: 'criticality_supply',
-    name: 'Criticality / Supply Risk Labels',
+    id: 'expiry_shelf_life',
+    name: 'Expiry / Shelf-Life',
     count: 185,
     color: '#ef4444',
     icon: 'AlertTriangle',
     subLabels: [
-      { id: 'critical', name: 'CRITICAL', count: 45, description: 'Essential for operations' },
-      { id: 'high_priority', name: 'HIGH_PRIORITY', count: 60, description: 'Important items' },
-      { id: 'standard', name: 'STANDARD', count: 80, description: 'Regular priority' }
+      { id: 'expiring_imminent', name: 'EXPIRING_IMMINENT (<30 days)', count: 18, description: 'Expires within 30 days' },
+      { id: 'near_expiry', name: 'NEAR_EXPIRY (1–3 months)', count: 32, description: 'Expires in 1-3 months' },
+      { id: 'medium_shelf_life', name: 'MEDIUM_SHELF_LIFE', count: 65, description: 'Moderate shelf life' },
+      { id: 'long_shelf_life', name: 'LONG_SHELF_LIFE', count: 45, description: 'Extended shelf life' },
+      { id: 'expired', name: 'EXPIRED', count: 8, description: 'Past expiry date' },
+      { id: 'high_expiry_risk', name: 'HIGH_EXPIRY_RISK', count: 12, description: 'High risk of expiry' },
+      { id: 'low_expiry_risk', name: 'LOW_EXPIRY_RISK', count: 5, description: 'Low expiry risk' }
     ]
   },
   {
-    id: 'clinical_therapeutic',
-    name: 'Clinical / Therapeutic Labels',
+    id: 'demand_pattern',
+    name: 'Demand Pattern & Predictability',
     count: 195,
     color: '#10b981',
     icon: 'Stethoscope',
     subLabels: [
-      { id: 'life_saving', name: 'LIFE_SAVING', count: 35, description: 'Critical for survival' },
-      { id: 'chronic_care', name: 'CHRONIC_CARE', count: 90, description: 'Long-term treatment' },
-      { id: 'acute_care', name: 'ACUTE_CARE', count: 70, description: 'Short-term treatment' }
+      { id: 'stable_demand', name: 'STABLE_DEMAND', count: 75, description: 'Consistent demand pattern' },
+      { id: 'volatile_demand', name: 'VOLATILE_DEMAND', count: 35, description: 'Highly variable demand' },
+      { id: 'seasonal_demand', name: 'SEASONAL_DEMAND', count: 28, description: 'Seasonal variations' },
+      { id: 'programmatic_demand', name: 'PROGRAMMATIC_DEMAND', count: 22, description: 'Program-driven demand' },
+      { id: 'event_driven_demand', name: 'EVENT_DRIVEN_DEMAND', count: 15, description: 'Event-based demand' },
+      { id: 'one_off_demand', name: 'ONE_OFF / EXCEPTIONAL_DEMAND', count: 12, description: 'One-time requirements' },
+      { id: 'unpredictable_demand', name: 'UNPREDICTABLE_DEMAND', count: 8, description: 'Unpredictable pattern' }
     ]
   },
   {
-    id: 'storage_handling',
-    name: 'Storage / Handling Labels',
+    id: 'criticality_service',
+    name: 'Criticality & Service Level',
     count: 75,
     color: '#06b6d4',
     icon: 'Thermometer',
     subLabels: [
-      { id: 'cold_chain', name: 'COLD_CHAIN', count: 28, description: '2-8°C storage' },
-      { id: 'controlled_substance', name: 'CONTROLLED_SUBSTANCE', count: 15, description: 'Regulated storage' },
-      { id: 'hazardous', name: 'HAZARDOUS', count: 12, description: 'Special handling' },
-      { id: 'light_sensitive', name: 'LIGHT_SENSITIVE', count: 20, description: 'Protect from light' }
+      { id: 'life_saving', name: 'LIFE_SAVING / CRITICAL_CARE_ITEM', count: 18, description: 'Critical for survival' },
+      { id: 'high_criticality', name: 'HIGH_CRITICALITY', count: 22, description: 'High importance' },
+      { id: 'medium_criticality', name: 'MEDIUM_CRITICALITY', count: 20, description: 'Medium importance' },
+      { id: 'low_criticality', name: 'LOW_CRITICALITY', count: 8, description: 'Low importance' },
+      { id: 'high_service_level', name: 'HIGH_SERVICE_LEVEL_TARGET', count: 3, description: 'High service requirements' },
+      { id: 'normal_service_level', name: 'NORMAL_SERVICE_LEVEL_TARGET', count: 3, description: 'Standard service level' },
+      { id: 'low_service_level', name: 'LOW_SERVICE_LEVEL_TARGET', count: 1, description: 'Low service requirements' }
     ]
   },
   {
-    id: 'cost_financial',
-    name: 'Cost / Financial Labels',
+    id: 'value_cost_impact',
+    name: 'Value / Cost Impact',
     count: 215,
     color: '#f59e0b',
     icon: 'DollarSign',
     subLabels: [
-      { id: 'high_value', name: 'HIGH_VALUE', count: 40, description: '>₹10,000 per unit' },
-      { id: 'medium_value', name: 'MEDIUM_VALUE', count: 80, description: '₹1,000-10,000' },
-      { id: 'low_value', name: 'LOW_VALUE', count: 95, description: '<₹1,000 per unit' }
+      { id: 'high_value_item', name: 'HIGH_VALUE_ITEM', count: 40, description: '>₹10,000 per unit' },
+      { id: 'medium_value_item', name: 'MEDIUM_VALUE_ITEM', count: 80, description: '₹1,000-10,000' },
+      { id: 'low_value_item', name: 'LOW_VALUE_ITEM', count: 60, description: '<₹1,000 per unit' },
+      { id: 'high_margin_item', name: 'HIGH_MARGIN_ITEM', count: 15, description: 'High profit margin' },
+      { id: 'low_margin_item', name: 'LOW_MARGIN_ITEM', count: 12, description: 'Low profit margin' },
+      { id: 'high_stock_value', name: 'HIGH_STOCK_VALUE', count: 5, description: 'High inventory value' },
+      { id: 'low_stock_value', name: 'LOW_STOCK_VALUE', count: 3, description: 'Low inventory value' }
     ]
   },
   {
-    id: 'lifecycle_status',
-    name: 'Lifecycle / Status Labels',
+    id: 'policy_handling',
+    name: 'Policy / Handling',
     count: 205,
     color: '#ec4899',
     icon: 'RefreshCw',
     subLabels: [
-      { id: 'active', name: 'ACTIVE', count: 180, description: 'Currently in use' },
-      { id: 'phasing_out', name: 'PHASING_OUT', count: 15, description: 'Being discontinued' },
-      { id: 'discontinued', name: 'DISCONTINUED', count: 10, description: 'No longer available' }
+      { id: 'restricted_use', name: 'RESTRICTED_USE', count: 35, description: 'Limited authorization' },
+      { id: 'formulary_item', name: 'FORMULARY_ITEM', count: 85, description: 'Approved formulary' },
+      { id: 'non_formulary_item', name: 'NON_FORMULARY_ITEM', count: 25, description: 'Non-formulary item' },
+      { id: 'substitution_allowed', name: 'SUBSTITUTION_ALLOWED', count: 20, description: 'Substitution permitted' },
+      { id: 'substitution_not_allowed', name: 'SUBSTITUTION_NOT_ALLOWED', count: 15, description: 'No substitution' },
+      { id: 'cold_chain_item', name: 'COLD_CHAIN_ITEM', count: 12, description: '2-8°C storage' },
+      { id: 'controlled_substance', name: 'CONTROLLED_SUBSTANCE', count: 8, description: 'Regulated storage' },
+      { id: 'kit_component', name: 'KIT_COMPONENT', count: 5, description: 'Part of kit' }
     ]
   }
 ];

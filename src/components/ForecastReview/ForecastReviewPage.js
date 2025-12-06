@@ -1,10 +1,10 @@
 import React, { useState, useCallback } from 'react';
 import { ArrowLeft, Filter, Download, RefreshCw, GitBranch } from 'lucide-react';
-import { medicineCategories } from '../../data/consistentSyntheticData';
+import { medicineCategories } from '../../data/unifiedPharmaData';
 import ForecastAdjustmentDrawer from './ForecastAdjustmentDrawer';
 import ProductJourneyModal from './ProductJourneyModal';
 
-const ForecastReviewPage = ({ onBack, selectedNode }) => {
+const ForecastReviewPage = ({ onBack, selectedNode, onNavigateToProductJourney }) => {
   const [filters, setFilters] = useState({
     location: 'All',
     timeBucket: 'Week',
@@ -18,12 +18,12 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
 
   const getLocationForMedicine = (category) => {
     const locations = {
-      'Emergency': 'Emergency & Critical Care – Hospital A',
-      'OT': 'Operating Theatre – Hospital A', 
-      'Ward': 'Inpatient Ward 3 – Hospital A',
-      'Daycare': 'Oncology Day-care – Hospital A',
-      'General': 'OPD Pharmacy – Hospital A',
-      'Implant': 'Cardiac Cath Lab – Hospital A'
+      'emergency': 'Emergency & Critical Care – Hospital A',
+      'ot': 'Operating Theatre – Hospital A', 
+      'ward': 'Inpatient Ward 3 – Hospital A',
+      'daycare': 'Oncology Day-care – Hospital A',
+      'general': 'OPD Pharmacy – Hospital A',
+      'implant': 'Cardiac Cath Lab – Hospital A'
     };
     return locations[category] || 'General Ward – Hospital A';
   };
@@ -46,26 +46,68 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
 
   // Get medicines from the selected category with consistent data
   const getMedicinesForCategory = useCallback((categoryName) => {
-    const category = Object.values(medicineCategories).find(cat => cat.name === categoryName);
+    const category = medicineCategories.find(cat => cat.name === categoryName);
     if (!category) return [];
     
-    return category.medicines.map((medicine, index) => ({
-      id: index + 1,
-      sku: medicine.name,
-      code: `${medicine.category.toUpperCase()}-${String(index + 1).padStart(3, '0')}`,
-      location: getLocationForMedicine(medicine.category),
-      forecast: `${medicine.quantity} ${getUnitForMedicine(medicine.name)}`,
-      currentPlan: `${Math.floor(medicine.quantity * 0.9)} ${getUnitForMedicine(medicine.name)}`,
-      keyKpis: { 
-        otif: medicine.otif >= 90 ? 'High' : medicine.otif >= 80 ? 'Medium' : 'Low',
-        expiry: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Medium' : 'Low'
-      },
-      delta: getDeltaMessage(medicine.otif),
-      status: medicine.otif >= 90 ? 'low' : medicine.otif >= 80 ? 'medium' : 'critical',
-      priority: medicine.otif >= 90 ? 'LOW' : medicine.otif >= 80 ? 'MEDIUM' : 'CRITICAL',
-      action: 'Review / Override',
-      actualOtif: medicine.otif
-    }));
+    // Generate medicines based on the category's itemCount to match the displayed count
+    const medicines = [];
+    const baseNames = {
+      'Emergency Medicines': [
+        'Inj. Adrenaline 1mg', 'Inj. Atropine 0.6mg', 'Inj. Dopamine 200mg', 
+        'Inj. Noradrenaline 4mg', 'Inj. Hydrocortisone 100mg', 'Inj. Furosemide 20mg',
+        'Inj. Diazepam 10mg', 'Inj. Midazolam 5mg'
+      ],
+      'OT Medicines': [
+        'Inj. Propofol 200mg', 'Inj. Sevoflurane 250ml', 'Inj. Rocuronium 50mg',
+        'Inj. Vecuronium 10mg', 'Inj. Fentanyl 100mcg', 'Inj. Morphine 10mg'
+      ],
+      'Ward Medicines': [
+        'Tab. Paracetamol 500mg', 'Tab. Ibuprofen 400mg', 'Inj. Ceftriaxone 1g',
+        'Tab. Omeprazole 20mg', 'Inj. Pantoprazole 40mg', 'Tab. Metformin 500mg'
+      ],
+      'Daycare Medicines': [
+        'Inj. Rituximab 500mg', 'Inj. Trastuzumab 440mg', 'Inj. Bevacizumab 400mg',
+        'Inj. Carboplatin 450mg', 'Inj. Paclitaxel 300mg'
+      ],
+      'General Medicines': [
+        'Tab. Aspirin 75mg', 'Tab. Atorvastatin 20mg', 'Tab. Amlodipine 5mg',
+        'Tab. Metoprolol 50mg', 'Tab. Lisinopril 10mg'
+      ],
+      'Implant Medicines': [
+        'Cardiac Stent Drug Eluting', 'Hip Joint Prosthesis', 'Knee Joint Prosthesis',
+        'Pacemaker Dual Chamber', 'ICD Device'
+      ]
+    };
+    
+    const names = baseNames[categoryName] || ['Medicine Item'];
+    
+    for (let i = 0; i < category.itemCount; i++) {
+      const baseName = names[i % names.length];
+      const medicineName = i >= names.length ? `${baseName} (${Math.floor(i / names.length) + 1})` : baseName;
+      const quantity = 100 + Math.floor(Math.random() * 400);
+      const otif = 75 + Math.random() * 25; // Random OTIF between 75-100%
+      
+      medicines.push({
+        id: i + 1,
+        sku: medicineName,
+        code: `${category.id.toUpperCase()}-${String(i + 1).padStart(3, '0')}`,
+        location: getLocationForMedicine(category.id),
+        forecast: `${quantity} ${getUnitForMedicine(medicineName)}`,
+        currentPlan: `${Math.floor(quantity * 0.9)} ${getUnitForMedicine(medicineName)}`,
+        keyKpis: { 
+          otif: otif >= 90 ? 'High' : otif >= 80 ? 'Medium' : 'Low',
+          expiry: Math.random() > 0.7 ? 'High' : Math.random() > 0.4 ? 'Medium' : 'Low'
+        },
+        delta: getDeltaMessage(otif),
+        status: otif >= 90 ? 'low' : otif >= 80 ? 'medium' : 'critical',
+        priority: otif >= 90 ? 'LOW' : otif >= 80 ? 'MEDIUM' : 'CRITICAL',
+        action: 'Review / Override',
+        actualOtif: otif,
+        tag: ['Must have', 'Patient Related', 'Regular Supply'][Math.floor(Math.random() * 3)]
+      });
+    }
+    
+    return medicines;
   }, []);
 
   React.useEffect(() => {
@@ -235,6 +277,9 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
                     Flow
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Tag
+                  </th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Location
                   </th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -274,6 +319,16 @@ const ForecastReviewPage = ({ onBack, selectedNode }) => {
                         <GitBranch className="w-4 h-4" />
                         Flow
                       </button>
+                    </td>
+                    <td className="px-4 py-4">
+                      <select 
+                        className="w-full px-2 py-1 border border-gray-300 rounded text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        defaultValue={item.tag || 'Must have'}
+                      >
+                        <option value="Must have">Must have</option>
+                        <option value="Patient Related">Patient Related</option>
+                        <option value="Regular Supply">Regular Supply</option>
+                      </select>
                     </td>
                     <td className="px-4 py-4">
                       <div className="text-sm text-gray-900">{item.location}</div>

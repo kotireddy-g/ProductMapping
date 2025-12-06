@@ -1,10 +1,16 @@
 import React, { useState } from 'react';
+import { BarChart3, AlertTriangle, TrendingUp } from 'lucide-react';
 import OTIFSection from './OTIFSection';
 import LabelsSection from './LabelsSection';
 import ForecastSection from './ForecastSection';
 
-const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
+const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney, onNavigateToForecastReview }) => {
   const [activeSection, setActiveSection] = useState('otif');
+  
+  // Data for tab counts and OTIF percentage
+  const overallOTIF = 92.4;
+  const stockoutCount = 15; // Number of items with stockout issues
+  const forecastCount = 46; // Number of forecasts generated
 
   return (
     <div className="min-h-screen bg-slate-50">
@@ -18,21 +24,21 @@ const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
           }`}
         >
           <span className="flex items-center justify-center gap-2">
-            <span className="text-xl">📊</span>
-            OTIF
+            <BarChart3 size={18} />
+            OTIF ({overallOTIF}%)
           </span>
         </button>
         <button
           onClick={() => setActiveSection('labels')}
           className={`flex-1 py-4 px-6 text-center font-semibold transition-all ${
             activeSection === 'labels'
-              ? 'bg-purple-50 text-purple-700 border-b-2 border-purple-600'
+              ? 'bg-orange-50 text-orange-700 border-b-2 border-orange-600'
               : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
-            <span className="text-xl">🏷️</span>
-            Labels
+            <AlertTriangle size={18} />
+            Actions ({stockoutCount})
           </span>
         </button>
         <button
@@ -44,8 +50,8 @@ const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
           }`}
         >
           <span className="flex items-center justify-center gap-2">
-            <span className="text-xl">📈</span>
-            Forecast
+            <TrendingUp size={18} />
+            Improvement ({forecastCount})
           </span>
         </button>
       </div>
@@ -61,6 +67,7 @@ const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
           <ForecastSection 
             onNavigateToRCA={onNavigateToRCA}
             onNavigateToProductJourney={onNavigateToProductJourney}
+            onNavigateToForecastReview={onNavigateToForecastReview}
           />
         )}
       </div>

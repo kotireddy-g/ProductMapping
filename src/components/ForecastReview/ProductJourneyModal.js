@@ -1,62 +1,261 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 
 const ProductJourneyModal = ({ isOpen, onClose, selectedItem }) => {
-  const [selectedLevel, setSelectedLevel] = useState(null);
+  const canvasRef = useRef(null);
+  const animationRef = useRef(null);
+  const particlesRef = useRef([]);
 
-  // Generate journey data based on selected item
-  const generateJourneyData = () => {
+  const getProductData = () => {
     if (!selectedItem) return null;
 
-    const medicineName = selectedItem.sku.split(' ')[1] || 'Medicine';
-    const totalQuantity = parseInt(selectedItem.forecast?.split(' ')[0]) || 500;
-
+    const medicineName = selectedItem.sku || 'Medicine';
+    const totalUnits = parseInt(selectedItem.forecast?.split(' ')[0]) || 500;
+    
+    const icuPct = 0.12, emergencyPct = 0.22, generalPct = 0.28, otPct = 0.20, pharmacyPct = 0.18;
+    
     return {
-      level1: {
-        name: medicineName,
-        quantity: totalQuantity,
-        unit: 'units'
-      },
-      level2: [
-        { name: 'ICU', stock: Math.floor(totalQuantity * 0.25), color: 'bg-slate-500' },
-        { name: 'Emergency Ward', stock: Math.floor(totalQuantity * 0.20), color: 'bg-slate-500' },
-        { name: 'General Ward', stock: Math.floor(totalQuantity * 0.30), color: 'bg-slate-500' },
-        { name: 'Operation Theater', stock: Math.floor(totalQuantity * 0.15), color: 'bg-slate-500' },
-        { name: 'Pharmacy Store', stock: Math.floor(totalQuantity * 0.10), color: 'bg-slate-500' }
+      name: medicineName.replace('Tab. ', '').replace('Inj. ', ''),
+      totalUnits: totalUnits,
+      distribution: [
+        { name: 'ICU', units: Math.round(totalUnits * icuPct), color: '#ef4444', type: 'critical' },
+        { name: 'Emergency Ward', units: Math.round(totalUnits * emergencyPct), color: '#ef4444', type: 'critical' },
+        { name: 'General Ward', units: Math.round(totalUnits * generalPct), color: '#10b981', type: 'normal' },
+        { name: 'Operation Theater', units: Math.round(totalUnits * otPct), color: '#3b82f6', type: 'routine' },
+        { name: 'Pharmacy Store', units: Math.round(totalUnits * pharmacyPct), color: '#3b82f6', type: 'routine' }
       ],
-      level3: [
-        { name: 'ICU Usage', used: Math.floor(totalQuantity * 0.15), color: 'bg-green-500' },
-        { name: 'Emergency Usage', used: Math.floor(totalQuantity * 0.12), color: 'bg-green-500' },
-        { name: 'General Usage', used: Math.floor(totalQuantity * 0.18), color: 'bg-green-500' },
-        { name: 'OT Usage', used: Math.floor(totalQuantity * 0.08), color: 'bg-green-500' },
-        { name: 'Pharmacy Usage', used: Math.floor(totalQuantity * 0.05), color: 'bg-green-500' }
-      ],
-      level4: [
-        { name: 'ICU Stock', stock: Math.floor(totalQuantity * 0.08), color: 'bg-orange-500' },
-        { name: 'Emergency Stock', stock: Math.floor(totalQuantity * 0.06), color: 'bg-orange-500' },
-        { name: 'General Stock', stock: Math.floor(totalQuantity * 0.10), color: 'bg-orange-500' },
-        { name: 'OT Stock', stock: Math.floor(totalQuantity * 0.05), color: 'bg-orange-500' },
-        { name: 'Pharmacy Stock', stock: Math.floor(totalQuantity * 0.03), color: 'bg-orange-500' }
-      ],
-      level5: [
-        { name: 'Patient Care', stock: Math.floor(totalQuantity * 0.12), color: 'bg-blue-500' },
-        { name: 'Procedures', stock: Math.floor(totalQuantity * 0.08), color: 'bg-blue-500' },
-        { name: 'Outpatient', stock: Math.floor(totalQuantity * 0.05), color: 'bg-blue-500' }
+      consumption: [
+        { name: 'Patient Care', rate: Math.round(totalUnits * 0.008), unit: '/hr' },
+        { name: 'Procedures', rate: Math.round(totalUnits * 0.005), unit: '/hr' },
+        { name: 'Outpatient', rate: Math.round(totalUnits * 0.004), unit: '/hr' },
+        { name: 'Research', rate: Math.round(totalUnits * 0.002), unit: '/hr' }
       ]
     };
   };
+  
+  const currentProduct = getProductData();
 
-  const journeyData = generateJourneyData();
+  useEffect(() => {
+    if (!isOpen || !currentProduct) return;
 
-  const levels = [
-    { id: 1, title: 'Product', color: 'text-gray-700' },
-    { id: 2, title: 'Distribution', color: 'text-gray-700' },
-    { id: 3, title: 'Usage Count', color: 'text-gray-700' },
-    { id: 4, title: 'Available Stock', color: 'text-gray-700' },
-    { id: 5, title: 'Consumption', color: 'text-gray-700' }
-  ];
+    const canvas = canvasRef.current;
+    if (!canvas) return;
 
-  if (!isOpen || !journeyData) return null;
+    const ctx = canvas.getContext('2d');
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * 2;
+    canvas.height = rect.height * 2;
+    ctx.scale(2, 2);
+
+    const width = rect.width;
+    const height = rect.height;
+
+    const sourceX = 120;
+    const sourceY = height / 2;
+    const distributionX = width / 2;
+    const consumptionX = width - 80;
+
+    const distributionNodes = currentProduct.distribution.map((node, i) => ({
+      ...node,
+      x: distributionX,
+      y: 60 + i * 70,
+    }));
+
+    const consumptionNodes = currentProduct.consumption.map((node, i) => ({
+      ...node,
+      x: consumptionX,
+      y: 80 + i * 85,
+    }));
+
+    class Particle {
+      constructor(startX, startY, endX, endY, color, speed) {
+        this.startX = startX;
+        this.startY = startY;
+        this.endX = endX;
+        this.endY = endY;
+        this.color = color;
+        this.speed = speed;
+        this.progress = Math.random();
+        this.size = 3 + Math.random() * 2;
+      }
+
+      update() {
+        this.progress += this.speed;
+        if (this.progress > 1) this.progress = 0;
+      }
+
+      draw(ctx) {
+        const midX = (this.startX + this.endX) / 2;
+        const t = this.progress;
+        
+        const x = (1 - t) * (1 - t) * this.startX + 2 * (1 - t) * t * midX + t * t * this.endX;
+        const y = (1 - t) * (1 - t) * this.startY + 2 * (1 - t) * t * ((this.startY + this.endY) / 2) + t * t * this.endY;
+
+        ctx.beginPath();
+        ctx.arc(x, y, this.size, 0, Math.PI * 2);
+        ctx.fillStyle = this.color;
+        ctx.shadowColor = this.color;
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+    }
+
+    particlesRef.current = [];
+    
+    distributionNodes.forEach(node => {
+      for (let i = 0; i < 5; i++) {
+        particlesRef.current.push(
+          new Particle(sourceX + 60, sourceY, node.x - 50, node.y + 20, node.color, 0.003 + Math.random() * 0.004)
+        );
+      }
+    });
+
+    distributionNodes.forEach((distNode, di) => {
+      consumptionNodes.forEach((consNode, ci) => {
+        if (Math.random() > 0.5) {
+          for (let i = 0; i < 2; i++) {
+            particlesRef.current.push(
+              new Particle(distNode.x + 50, distNode.y + 20, consNode.x - 40, consNode.y + 15, distNode.color, 0.002 + Math.random() * 0.003)
+            );
+          }
+        }
+      });
+    });
+
+    const animate = () => {
+      ctx.fillStyle = '#f1f5f9';
+      ctx.fillRect(0, 0, width, height);
+
+      ctx.font = '12px Inter, sans-serif';
+      ctx.fillStyle = '#475569';
+      ctx.textAlign = 'center';
+      ctx.fillText('SOURCE', sourceX, 30);
+      ctx.fillText('DISTRIBUTION', distributionX, 30);
+      ctx.fillText('CONSUMPTION', consumptionX, 30);
+
+      ctx.strokeStyle = '#cbd5e1';
+      ctx.setLineDash([5, 5]);
+      ctx.beginPath();
+      ctx.moveTo(sourceX + 80, 40);
+      ctx.lineTo(sourceX + 80, height - 20);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(distributionX + 60, 40);
+      ctx.lineTo(distributionX + 60, height - 20);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      distributionNodes.forEach(node => {
+        ctx.strokeStyle = node.color + '40';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(sourceX + 60, sourceY);
+        const midX = (sourceX + 60 + node.x - 50) / 2;
+        ctx.quadraticCurveTo(midX, sourceY, node.x - 50, node.y + 20);
+        ctx.stroke();
+      });
+
+      distributionNodes.forEach(distNode => {
+        consumptionNodes.forEach(consNode => {
+          ctx.strokeStyle = '#334155';
+          ctx.lineWidth = 1;
+          ctx.setLineDash([3, 3]);
+          ctx.beginPath();
+          ctx.moveTo(distNode.x + 50, distNode.y + 20);
+          ctx.lineTo(consNode.x - 40, consNode.y + 15);
+          ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      });
+
+      const gradient = ctx.createRadialGradient(sourceX, sourceY, 0, sourceX, sourceY, 60);
+      gradient.addColorStop(0, '#ef4444');
+      gradient.addColorStop(1, '#991b1b');
+      
+      ctx.beginPath();
+      ctx.arc(sourceX, sourceY, 55, 0, Math.PI * 2);
+      ctx.fillStyle = gradient;
+      ctx.fill();
+      ctx.strokeStyle = '#ef4444';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+
+      ctx.fillStyle = 'white';
+      ctx.font = 'bold 14px Inter, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText(currentProduct.name, sourceX, sourceY - 10);
+      ctx.font = 'bold 24px Inter, sans-serif';
+      ctx.fillText(currentProduct.totalUnits.toLocaleString(), sourceX, sourceY + 15);
+      ctx.font = '11px Inter, sans-serif';
+      ctx.fillStyle = '#fca5a5';
+      ctx.fillText('units', sourceX, sourceY + 30);
+
+      distributionNodes.forEach(node => {
+        const isHighlight = node.type === 'critical';
+        
+        ctx.fillStyle = isHighlight ? node.color + '20' : '#ffffff';
+        ctx.strokeStyle = node.color;
+        ctx.lineWidth = isHighlight ? 3 : 2;
+        
+        const boxWidth = 100;
+        const boxHeight = 50;
+        const radius = 8;
+        
+        ctx.beginPath();
+        ctx.roundRect(node.x - boxWidth/2, node.y, boxWidth, boxHeight, radius);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#1e293b';
+        ctx.font = '11px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(node.name, node.x, node.y + 18);
+        ctx.font = 'bold 18px Inter, sans-serif';
+        ctx.fillStyle = node.color;
+        ctx.fillText(node.units.toString(), node.x, node.y + 38);
+      });
+
+      consumptionNodes.forEach(node => {
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#cbd5e1';
+        ctx.lineWidth = 1;
+        
+        const boxWidth = 80;
+        const boxHeight = 30;
+        
+        ctx.beginPath();
+        ctx.roundRect(node.x - boxWidth/2, node.y, boxWidth, boxHeight, 4);
+        ctx.fill();
+        ctx.stroke();
+
+        ctx.fillStyle = '#475569';
+        ctx.font = '10px Inter, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(node.name, node.x, node.y + 12);
+        ctx.fillStyle = '#22c55e';
+        ctx.font = 'bold 12px Inter, sans-serif';
+        ctx.fillText(`${node.rate}${node.unit}`, node.x, node.y + 24);
+      });
+
+      particlesRef.current.forEach(particle => {
+        particle.update();
+        particle.draw(ctx);
+      });
+
+      animationRef.current = requestAnimationFrame(animate);
+    };
+
+    animate();
+
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+    };
+  }, [isOpen, currentProduct]);
+
+  if (!isOpen || !currentProduct) return null;
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden">
@@ -79,288 +278,34 @@ const ProductJourneyModal = ({ isOpen, onClose, selectedItem }) => {
           </button>
         </div>
 
-        {/* Level Headers */}
-        <div className="flex items-center justify-between px-6 py-4 bg-gray-50 border-b border-gray-200">
-          {levels.map((level) => (
-            <div key={level.id} className="flex-1 text-center">
-              <div className="text-sm font-medium text-gray-600">Level {level.id}: {level.title}</div>
-            </div>
-          ))}
+        {/* Animated Canvas */}
+        <div className="flex-1 overflow-hidden">
+          <canvas 
+            ref={canvasRef} 
+            className="w-full h-full"
+          />
         </div>
 
-        {/* Journey Visualization */}
-        <div className="flex-1 overflow-auto p-6">
-          <div className="relative h-full">
-            <svg width="100%" height="600" className="mx-auto">
-              {/* Level 1 - Product */}
-              <g>
-                <circle
-                  cx="100"
-                  cy="300"
-                  r="60"
-                  fill="#ef4444"
-                  stroke="#dc2626"
-                  strokeWidth="3"
-                  className="cursor-pointer"
-                />
-                <text
-                  x="100"
-                  y="290"
-                  textAnchor="middle"
-                  className="fill-white text-sm font-semibold"
-                >
-                  {journeyData.level1.name}
-                </text>
-                <text
-                  x="100"
-                  y="310"
-                  textAnchor="middle"
-                  className="fill-white text-xs"
-                >
-                  {journeyData.level1.quantity}
-                </text>
-                <text
-                  x="100"
-                  y="325"
-                  textAnchor="middle"
-                  className="fill-white text-xs"
-                >
-                  {journeyData.level1.unit}
-                </text>
-              </g>
-
-              {/* Level 2 - Distribution */}
-              {journeyData.level2.map((item, index) => {
-                const y = 100 + index * 100;
-                return (
-                  <g key={index}>
-                    <rect
-                      x="250"
-                      y={y - 25}
-                      width="120"
-                      height="50"
-                      rx="8"
-                      fill="#64748b"
-                      className="cursor-pointer"
-                    />
-                    <text
-                      x="310"
-                      y={y - 5}
-                      textAnchor="middle"
-                      className="fill-white text-xs font-medium"
-                    >
-                      {item.name}
-                    </text>
-                    <text
-                      x="310"
-                      y={y + 10}
-                      textAnchor="middle"
-                      className="fill-white text-xs"
-                    >
-                      Stock: {item.stock}
-                    </text>
-                    
-                    {/* Connection line from Level 1 */}
-                    <line
-                      x1="160"
-                      y1="300"
-                      x2="250"
-                      y2={y}
-                      stroke="#dc2626"
-                      strokeWidth="2"
-                      markerEnd="url(#arrowhead)"
-                    />
-                  </g>
-                );
-              })}
-
-              {/* Level 3 - Usage Count */}
-              {journeyData.level3.map((item, index) => {
-                const y = 100 + index * 100;
-                return (
-                  <g key={index}>
-                    <rect
-                      x="420"
-                      y={y - 25}
-                      width="120"
-                      height="50"
-                      rx="8"
-                      fill="#22c55e"
-                      className="cursor-pointer"
-                    />
-                    <text
-                      x="480"
-                      y={y - 5}
-                      textAnchor="middle"
-                      className="fill-white text-xs font-medium"
-                    >
-                      {item.name}
-                    </text>
-                    <text
-                      x="480"
-                      y={y + 10}
-                      textAnchor="middle"
-                      className="fill-white text-xs"
-                    >
-                      Used: {item.used}
-                    </text>
-                    
-                    {/* Connection line from Level 2 */}
-                    <line
-                      x1="370"
-                      y1={y}
-                      x2="420"
-                      y2={y}
-                      stroke="#64748b"
-                      strokeWidth="2"
-                      markerEnd="url(#arrowhead)"
-                    />
-                  </g>
-                );
-              })}
-
-              {/* Level 4 - Available Stock */}
-              {journeyData.level4.map((item, index) => {
-                const y = 100 + index * 100;
-                return (
-                  <g key={index}>
-                    <rect
-                      x="590"
-                      y={y - 25}
-                      width="120"
-                      height="50"
-                      rx="8"
-                      fill="#f97316"
-                      className="cursor-pointer"
-                    />
-                    <text
-                      x="650"
-                      y={y - 5}
-                      textAnchor="middle"
-                      className="fill-white text-xs font-medium"
-                    >
-                      {item.name}
-                    </text>
-                    <text
-                      x="650"
-                      y={y + 10}
-                      textAnchor="middle"
-                      className="fill-white text-xs"
-                    >
-                      Stock: {item.stock}
-                    </text>
-                    
-                    {/* Connection line from Level 3 */}
-                    <line
-                      x1="540"
-                      y1={y}
-                      x2="590"
-                      y2={y}
-                      stroke="#22c55e"
-                      strokeWidth="2"
-                      markerEnd="url(#arrowhead)"
-                    />
-                  </g>
-                );
-              })}
-
-              {/* Level 5 - Consumption */}
-              {journeyData.level5.map((item, index) => {
-                const y = 150 + index * 120;
-                return (
-                  <g key={index}>
-                    <rect
-                      x="760"
-                      y={y - 25}
-                      width="120"
-                      height="50"
-                      rx="8"
-                      fill="#3b82f6"
-                      className="cursor-pointer"
-                    />
-                    <text
-                      x="820"
-                      y={y - 5}
-                      textAnchor="middle"
-                      className="fill-white text-xs font-medium"
-                    >
-                      {item.name}
-                    </text>
-                    <text
-                      x="820"
-                      y={y + 10}
-                      textAnchor="middle"
-                      className="fill-white text-xs"
-                    >
-                      Stock: {item.stock}
-                    </text>
-                    
-                    {/* Connection lines from Level 4 */}
-                    {index < 2 && (
-                      <>
-                        <line
-                          x1="710"
-                          y1={100 + index * 100}
-                          x2="760"
-                          y2={y}
-                          stroke="#f97316"
-                          strokeWidth="2"
-                          markerEnd="url(#arrowhead)"
-                        />
-                        <line
-                          x1="710"
-                          y1={200 + index * 100}
-                          x2="760"
-                          y2={y}
-                          stroke="#f97316"
-                          strokeWidth="2"
-                          markerEnd="url(#arrowhead)"
-                        />
-                      </>
-                    )}
-                    {index === 2 && (
-                      <line
-                        x1="710"
-                        y1="500"
-                        x2="760"
-                        y2={y}
-                        stroke="#f97316"
-                        strokeWidth="2"
-                        markerEnd="url(#arrowhead)"
-                      />
-                    )}
-                  </g>
-                );
-              })}
-
-              {/* Arrow marker definition */}
-              <defs>
-                <marker
-                  id="arrowhead"
-                  markerWidth="10"
-                  markerHeight="7"
-                  refX="9"
-                  refY="3.5"
-                  orient="auto"
-                >
-                  <polygon
-                    points="0 0, 10 3.5, 0 7"
-                    fill="#666"
+        {/* Distribution Summary */}
+        <div className="p-6 border-t border-gray-200">
+          <div className="grid grid-cols-5 gap-4">
+            {currentProduct.distribution.map((node, index) => (
+              <div 
+                key={index}
+                className="bg-white rounded-lg p-3 border border-gray-200 shadow-sm"
+              >
+                <div className="flex items-center gap-2 mb-1">
+                  <div 
+                    className="w-3 h-3 rounded-full"
+                    style={{ backgroundColor: node.color }}
                   />
-                </marker>
-              </defs>
-            </svg>
+                  <span className="text-gray-600 text-xs">{node.name}</span>
+                </div>
+                <p className="text-lg font-bold text-gray-800">{node.units}</p>
+                <p className="text-gray-400 text-xs">units allocated</p>
+              </div>
+            ))}
           </div>
-        </div>
-
-        {/* Footer */}
-        <div className="flex items-center justify-end gap-3 p-6 border-t border-gray-200">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Close
-          </button>
         </div>
       </div>
     </div>

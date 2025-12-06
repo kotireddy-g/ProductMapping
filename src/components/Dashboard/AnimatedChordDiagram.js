@@ -54,8 +54,9 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick }) => {
 
     const width = svgRef.current.clientWidth;
     const height = 400;
-    const leftX = 150;
-    const rightX = width - 200;
+    const padding = 100; // Add padding on both sides
+    const leftX = padding + 50;
+    const rightX = width - padding - 150;
 
     const leftNodes = medicineCategories.map((cat, i) => ({
       ...cat,
@@ -64,12 +65,17 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick }) => {
       side: 'left'
     }));
 
-    const rightNodes = rightSideItems.map((dept, i) => ({
-      ...dept,
-      x: rightX,
-      y: 60 + i * (300 / Math.max(rightSideItems.length, 1)),
-      side: 'right'
-    }));
+    const rightNodes = rightSideItems.map((dept, i) => {
+      // Generate realistic OTIF percentages for each department
+      const otifPercentages = [94.2, 87.5, 91.8, 89.3, 85.7, 92.1, 88.9, 90.4];
+      return {
+        ...dept,
+        x: rightX,
+        y: 60 + i * (300 / Math.max(rightSideItems.length, 1)),
+        side: 'right',
+        otif: otifPercentages[i % otifPercentages.length] || 88.5
+      };
+    });
 
     const connections = [];
     leftNodes.forEach(left => {
@@ -143,24 +149,7 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick }) => {
           setTooltipInfo(null);
         });
 
-      const totalLength = path.node().getTotalLength();
-      path
-        .attr('stroke-dasharray', `${totalLength / 4} ${totalLength}`)
-        .attr('stroke-dashoffset', totalLength)
-        .transition()
-        .delay(i * 20)
-        .duration(2000)
-        .ease(d3.easeLinear)
-        .attr('stroke-dashoffset', 0)
-        .on('end', function repeat() {
-          d3.select(this)
-            .attr('stroke-dashoffset', totalLength)
-            .transition()
-            .duration(3000 + Math.random() * 2000)
-            .ease(d3.easeLinear)
-            .attr('stroke-dashoffset', 0)
-            .on('end', repeat);
-        });
+      // Static ribbons - no animation
     });
 
     const leftGroup = svg.append('g').attr('class', 'left-nodes');
@@ -212,20 +201,31 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick }) => {
         });
 
       g.append('rect')
-        .attr('width', 180)
-        .attr('height', 28)
+        .attr('width', 200)
+        .attr('height', 32)
         .attr('rx', 6)
         .attr('fill', '#f1f5f9')
         .attr('stroke', '#3b82f6')
         .attr('stroke-width', 1.5);
 
       g.append('text')
-        .attr('x', 90)
-        .attr('y', 18)
+        .attr('x', 100)
+        .attr('y', 14)
         .attr('text-anchor', 'middle')
         .attr('fill', '#1e293b')
-        .attr('font-size', '10px')
-        .text(node.name.length > 24 ? node.name.substring(0, 22) + '...' : node.name);
+        .attr('font-size', '9px')
+        .attr('font-weight', '600')
+        .text(node.name.length > 26 ? node.name.substring(0, 24) + '...' : node.name);
+
+      // Add OTIF percentage
+      g.append('text')
+        .attr('x', 100)
+        .attr('y', 26)
+        .attr('text-anchor', 'middle')
+        .attr('fill', node.otif >= 90 ? '#10b981' : node.otif >= 85 ? '#f59e0b' : '#ef4444')
+        .attr('font-size', '9px')
+        .attr('font-weight', '700')
+        .text(`OTIF: ${node.otif}%`);
     });
 
   }, [selectedL1, selectedL2, onCategoryClick, onDepartmentClick, rightSideItems]);
