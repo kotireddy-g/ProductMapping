@@ -1,29 +1,29 @@
 import React from 'react';
-import { X, AlertTriangle, Package, Clock, TrendingUp, Bell, CheckCircle } from 'lucide-react';
+import { X, AlertTriangle, Package, Clock, TrendingUp, Bell } from 'lucide-react';
 
 const NotificationPanel = ({ isOpen, notifications, onClose, onMarkAsRead, onNavigate }) => {
   if (!isOpen) return null;
 
   const getNotificationIcon = (type) => {
     switch (type) {
-      case 'stockout': return <AlertTriangle className="w-5 h-5 text-red-400" />;
-      case 'low_stock': return <Package className="w-5 h-5 text-yellow-400" />;
-      case 'expiry': return <Clock className="w-5 h-5 text-orange-400" />;
-      case 'otif': return <TrendingUp className="w-5 h-5 text-blue-400" />;
-      case 'forecast': return <TrendingUp className="w-5 h-5 text-purple-400" />;
-      default: return <Bell className="w-5 h-5 text-slate-400" />;
+      case 'stockout': return <AlertTriangle className="w-5 h-5 text-red-500" />;
+      case 'low_stock': return <Package className="w-5 h-5 text-yellow-500" />;
+      case 'expiry': return <Clock className="w-5 h-5 text-orange-500" />;
+      case 'otif': return <TrendingUp className="w-5 h-5 text-blue-500" />;
+      case 'forecast': return <TrendingUp className="w-5 h-5 text-purple-500" />;
+      default: return <Bell className="w-5 h-5 text-slate-500" />;
     }
   };
 
   const getNotificationBg = (type, read) => {
-    if (read) return 'bg-slate-800/50';
+    if (read) return 'bg-slate-50';
     switch (type) {
-      case 'stockout': return 'bg-red-500/10 border-l-2 border-red-500';
-      case 'low_stock': return 'bg-yellow-500/10 border-l-2 border-yellow-500';
-      case 'expiry': return 'bg-orange-500/10 border-l-2 border-orange-500';
-      case 'otif': return 'bg-blue-500/10 border-l-2 border-blue-500';
-      case 'forecast': return 'bg-purple-500/10 border-l-2 border-purple-500';
-      default: return 'bg-slate-700/50';
+      case 'stockout': return 'bg-red-50 border-l-2 border-red-500';
+      case 'low_stock': return 'bg-yellow-50 border-l-2 border-yellow-500';
+      case 'expiry': return 'bg-orange-50 border-l-2 border-orange-500';
+      case 'otif': return 'bg-blue-50 border-l-2 border-blue-500';
+      case 'forecast': return 'bg-purple-50 border-l-2 border-purple-500';
+      default: return 'bg-slate-50';
     }
   };
 
@@ -38,23 +38,23 @@ const NotificationPanel = ({ isOpen, notifications, onClose, onMarkAsRead, onNav
   return (
     <>
       <div 
-        className="fixed inset-0 bg-black/50 z-40"
+        className="fixed inset-0 bg-black/30 z-40"
         onClick={onClose}
       />
-      <div className="fixed right-0 top-0 h-full w-96 bg-slate-800 border-l border-slate-700 z-50 overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-slate-700">
+      <div className="fixed right-0 top-0 h-full w-96 bg-white border-l border-slate-200 z-50 overflow-hidden flex flex-col shadow-xl">
+        <div className="flex items-center justify-between p-4 border-b border-slate-200 bg-slate-50">
           <div className="flex items-center gap-2">
-            <Bell className="w-5 h-5 text-slate-300" />
-            <h2 className="text-lg font-semibold text-white">Notifications</h2>
+            <Bell className="w-5 h-5 text-slate-600" />
+            <h2 className="text-lg font-semibold text-slate-800">Notifications</h2>
             <span className="px-2 py-0.5 bg-red-500 text-white text-xs rounded-full">
               {notifications.filter(n => !n.read).length}
             </span>
           </div>
           <button
             onClick={onClose}
-            className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+            className="p-2 hover:bg-slate-200 rounded-lg transition-colors"
           >
-            <X className="w-5 h-5 text-slate-400" />
+            <X className="w-5 h-5 text-slate-500" />
           </button>
         </div>
 
@@ -71,14 +71,14 @@ const NotificationPanel = ({ isOpen, notifications, onClose, onMarkAsRead, onNav
             };
 
             return (
-              <div key={type} className="border-b border-slate-700">
-                <div className="px-4 py-2 bg-slate-700/50">
-                  <span className="text-sm font-medium text-slate-300">{typeLabels[type]}</span>
+              <div key={type} className="border-b border-slate-200">
+                <div className="px-4 py-2 bg-slate-100">
+                  <span className="text-sm font-medium text-slate-600">{typeLabels[type]}</span>
                 </div>
                 {notifs.map((notification) => (
                   <div
                     key={notification.id}
-                    className={`p-4 hover:bg-slate-700/50 cursor-pointer transition-colors ${getNotificationBg(notification.type, notification.read)}`}
+                    className={`p-4 hover:bg-slate-100 cursor-pointer transition-colors ${getNotificationBg(notification.type, notification.read)}`}
                     onClick={() => {
                       if (onMarkAsRead) onMarkAsRead(notification.id);
                       if (onNavigate) onNavigate(notification);
@@ -89,9 +89,9 @@ const NotificationPanel = ({ isOpen, notifications, onClose, onMarkAsRead, onNav
                         {getNotificationIcon(notification.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-white font-medium text-sm">{notification.title}</p>
-                        <p className="text-slate-400 text-sm mt-1">{notification.message}</p>
-                        <p className="text-slate-500 text-xs mt-2">
+                        <p className="text-slate-800 font-medium text-sm">{notification.title}</p>
+                        <p className="text-slate-600 text-sm mt-1">{notification.message}</p>
+                        <p className="text-slate-400 text-xs mt-2">
                           {new Date(notification.timestamp).toLocaleTimeString()}
                         </p>
                       </div>
@@ -106,8 +106,8 @@ const NotificationPanel = ({ isOpen, notifications, onClose, onMarkAsRead, onNav
           })}
         </div>
 
-        <div className="p-4 border-t border-slate-700">
-          <button className="w-full py-2 text-center text-blue-400 hover:text-blue-300 text-sm font-medium transition-colors">
+        <div className="p-4 border-t border-slate-200 bg-slate-50">
+          <button className="w-full py-2 text-center text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors">
             View All Notifications
           </button>
         </div>

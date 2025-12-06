@@ -35,8 +35,8 @@ const LabelsSection = ({ onNavigateToRCA }) => {
 
   return (
     <div className="space-y-6">
-      <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-        <h3 className="text-white font-semibold mb-4">7 Core Labels</h3>
+      <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+        <h3 className="text-slate-800 font-semibold mb-4">7 Core Labels</h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7 gap-3">
           {coreLabels.map((label) => {
             const IconComponent = iconMap[label.icon] || Tag;
@@ -48,8 +48,8 @@ const LabelsSection = ({ onNavigateToRCA }) => {
                 onClick={() => handleCoreLabelClick(label)}
                 className={`p-4 rounded-xl cursor-pointer transition-all border ${
                   isSelected 
-                    ? 'border-white bg-slate-700 shadow-lg scale-105' 
-                    : 'border-slate-600 bg-slate-700/50 hover:bg-slate-700 hover:border-slate-500'
+                    ? 'border-blue-500 bg-blue-50 shadow-lg scale-105' 
+                    : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'
                 }`}
               >
                 <div className="flex items-center gap-2 mb-2">
@@ -60,7 +60,7 @@ const LabelsSection = ({ onNavigateToRCA }) => {
                     <IconComponent className="w-4 h-4" style={{ color: label.color }} />
                   </div>
                 </div>
-                <p className="text-white text-sm font-medium leading-tight mb-2">
+                <p className="text-slate-800 text-sm font-medium leading-tight mb-2">
                   {label.name.split(' / ').map((part, i) => (
                     <span key={i}>
                       {part}
@@ -75,7 +75,7 @@ const LabelsSection = ({ onNavigateToRCA }) => {
                   >
                     {label.count}
                   </span>
-                  <span className="text-slate-400 text-xs">products</span>
+                  <span className="text-slate-500 text-xs">products</span>
                 </div>
               </div>
             );
@@ -84,16 +84,16 @@ const LabelsSection = ({ onNavigateToRCA }) => {
       </div>
 
       {selectedCoreLabel && (
-        <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
+        <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-3">
               <div 
                 className="w-3 h-3 rounded-full"
                 style={{ backgroundColor: selectedCoreLabel.color }}
               />
-              <h3 className="text-white font-semibold">{selectedCoreLabel.name}</h3>
+              <h3 className="text-slate-800 font-semibold">{selectedCoreLabel.name}</h3>
             </div>
-            <span className="text-slate-400 text-sm">{selectedCoreLabel.subLabels.length} sub-labels</span>
+            <span className="text-slate-500 text-sm">{selectedCoreLabel.subLabels.length} sub-labels</span>
           </div>
           
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
@@ -106,8 +106,8 @@ const LabelsSection = ({ onNavigateToRCA }) => {
                   onClick={() => handleSubLabelClick(subLabel)}
                   className={`p-4 rounded-lg cursor-pointer transition-all border ${
                     isSelected 
-                      ? 'border-white bg-slate-700 shadow-lg' 
-                      : 'border-slate-600 bg-slate-700/30 hover:bg-slate-700/50 hover:border-slate-500'
+                      ? 'border-blue-500 bg-blue-50 shadow-md' 
+                      : 'border-slate-200 bg-slate-50 hover:bg-slate-100 hover:border-slate-300'
                   }`}
                 >
                   <div className="flex items-center justify-between mb-2">
@@ -117,10 +117,10 @@ const LabelsSection = ({ onNavigateToRCA }) => {
                     >
                       {subLabel.count}
                     </span>
-                    <ChevronRight className="w-4 h-4 text-slate-500" />
+                    <ChevronRight className="w-4 h-4 text-slate-400" />
                   </div>
-                  <p className="text-white text-xs font-medium mb-1">{subLabel.name}</p>
-                  <p className="text-slate-400 text-xs truncate">{subLabel.description}</p>
+                  <p className="text-slate-800 text-xs font-medium mb-1">{subLabel.name}</p>
+                  <p className="text-slate-500 text-xs truncate">{subLabel.description}</p>
                 </div>
               );
             })}

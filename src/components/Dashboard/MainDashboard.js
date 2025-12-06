@@ -7,14 +7,14 @@ const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
   const [activeSection, setActiveSection] = useState('otif');
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="flex border-b border-slate-700">
+    <div className="min-h-screen bg-slate-50">
+      <div className="flex border-b border-slate-200 bg-white">
         <button
           onClick={() => setActiveSection('otif')}
           className={`flex-1 py-4 px-6 text-center font-semibold transition-all ${
             activeSection === 'otif'
-              ? 'bg-slate-800 text-white border-b-2 border-blue-500'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              ? 'bg-blue-50 text-blue-700 border-b-2 border-blue-600'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
@@ -26,8 +26,8 @@ const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
           onClick={() => setActiveSection('labels')}
           className={`flex-1 py-4 px-6 text-center font-semibold transition-all ${
             activeSection === 'labels'
-              ? 'bg-slate-800 text-white border-b-2 border-purple-500'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              ? 'bg-purple-50 text-purple-700 border-b-2 border-purple-600'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
           }`}
         >
           <span className="flex items-center justify-center gap-2">
@@ -39,8 +39,8 @@ const MainDashboard = ({ onNavigateToRCA, onNavigateToProductJourney }) => {
           onClick={() => setActiveSection('forecast')}
           className={`flex-1 py-4 px-6 text-center font-semibold transition-all ${
             activeSection === 'forecast'
-              ? 'bg-slate-800 text-white border-b-2 border-green-500'
-              : 'text-slate-400 hover:text-white hover:bg-slate-800/50'
+              ? 'bg-green-50 text-green-700 border-b-2 border-green-600'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-50'
           }`}
         >
           <span className="flex items-center justify-center gap-2">

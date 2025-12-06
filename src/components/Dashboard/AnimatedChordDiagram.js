@@ -1,12 +1,27 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { medicineCategories, hospitalDepartments, chordConnections } from '../../data/unifiedPharmaData';
 
-const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLevel }) => {
+const movementColors = {
+  'fast-moving': '#10b981',
+  'medium': '#3b82f6',
+  'slow': '#f59e0b',
+  'occasional': '#8b5cf6'
+};
+
+const movementLabels = [
+  { type: 'fast-moving', label: 'Fast Moving', color: '#10b981' },
+  { type: 'medium', label: 'Medium', color: '#3b82f6' },
+  { type: 'slow', label: 'Slow Moving', color: '#f59e0b' },
+  { type: 'occasional', label: 'Occasional', color: '#8b5cf6' }
+];
+
+const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick }) => {
   const svgRef = useRef(null);
-  const [hoveredNode, setHoveredNode] = useState(null);
   const [selectedL1, setSelectedL1] = useState(null);
   const [selectedL2, setSelectedL2] = useState(null);
+  const [hoveredConnection, setHoveredConnection] = useState(null);
+  const [tooltipInfo, setTooltipInfo] = useState(null);
 
   const getLevel2Items = () => {
     if (!selectedL1) return [];
@@ -23,6 +38,13 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
     : selectedL1 
       ? getLevel2Items() 
       : hospitalDepartments.level1;
+
+  const getMovementType = (value) => {
+    if (value > 80) return 'fast-moving';
+    if (value > 50) return 'medium';
+    if (value > 25) return 'slow';
+    return 'occasional';
+  };
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -55,12 +77,15 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
         const existingConnection = chordConnections.find(
           c => c.source === left.id && c.target === right.id
         );
-        const strength = existingConnection ? existingConnection.value / 120 : 0.3 + (left.itemCount / 1000);
+        const value = existingConnection ? existingConnection.value : 20 + Math.floor(Math.random() * 80);
+        const movementType = getMovementType(value);
         connections.push({
           source: left,
           target: right,
-          strength: Math.min(1, strength),
-          color: left.color
+          value: value,
+          movementType: movementType,
+          color: movementColors[movementType],
+          strokeWidth: Math.max(1.5, (value / 30))
         });
       });
     });
@@ -78,12 +103,12 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
       gradient.append('stop')
         .attr('offset', '0%')
         .attr('stop-color', conn.color)
-        .attr('stop-opacity', 0.6);
+        .attr('stop-opacity', 0.7);
       
       gradient.append('stop')
         .attr('offset', '100%')
         .attr('stop-color', conn.color)
-        .attr('stop-opacity', 0.2);
+        .attr('stop-opacity', 0.3);
     });
 
     const linksGroup = svg.append('g').attr('class', 'links');
@@ -97,9 +122,26 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
                       ${conn.target.x - 10} ${conn.target.y + 10}`)
         .attr('fill', 'none')
         .attr('stroke', `url(#gradient-${i})`)
-        .attr('stroke-width', Math.max(1, conn.strength * 3))
-        .attr('opacity', 0.4)
-        .style('pointer-events', 'none');
+        .attr('stroke-width', conn.strokeWidth)
+        .attr('opacity', 0.5)
+        .attr('class', 'connection-path')
+        .style('cursor', 'pointer')
+        .on('mouseenter', function(event) {
+          d3.select(this).attr('opacity', 0.9).attr('stroke-width', conn.strokeWidth * 1.5);
+          const rect = svgRef.current.getBoundingClientRect();
+          setTooltipInfo({
+            x: event.clientX - rect.left,
+            y: event.clientY - rect.top - 60,
+            source: conn.source.name,
+            target: conn.target.name,
+            quantity: conn.value,
+            type: conn.movementType
+          });
+        })
+        .on('mouseleave', function() {
+          d3.select(this).attr('opacity', 0.5).attr('stroke-width', conn.strokeWidth);
+          setTooltipInfo(null);
+        });
 
       const totalLength = path.node().getTotalLength();
       path
@@ -132,15 +174,15 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
         .attr('width', 120)
         .attr('height', 45)
         .attr('rx', 8)
-        .attr('fill', node.color + '20')
-        .attr('stroke', node.color)
+        .attr('fill', '#f1f5f9')
+        .attr('stroke', '#3b82f6')
         .attr('stroke-width', 2);
 
       g.append('text')
         .attr('x', 60)
         .attr('y', 18)
         .attr('text-anchor', 'middle')
-        .attr('fill', 'white')
+        .attr('fill', '#1e293b')
         .attr('font-size', '10px')
         .attr('font-weight', '600')
         .text(node.name.split(' ')[0]);
@@ -149,14 +191,14 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
         .attr('x', 60)
         .attr('y', 32)
         .attr('text-anchor', 'middle')
-        .attr('fill', node.color)
+        .attr('fill', '#3b82f6')
         .attr('font-size', '11px')
         .attr('font-weight', '700')
         .text(`${node.itemCount} items`);
     });
 
     const rightGroup = svg.append('g').attr('class', 'right-nodes');
-    rightNodes.forEach((node, i) => {
+    rightNodes.forEach((node) => {
       const g = rightGroup.append('g')
         .attr('transform', `translate(${node.x - 10}, ${node.y})`)
         .style('cursor', 'pointer')
@@ -169,22 +211,19 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
           onDepartmentClick && onDepartmentClick(node);
         });
 
-      const parentColor = hospitalDepartments.level1.find(l => l.id === selectedL1)?.color || '#64748b';
-      const nodeColor = node.color || parentColor;
-
       g.append('rect')
         .attr('width', 180)
         .attr('height', 28)
         .attr('rx', 6)
-        .attr('fill', nodeColor + '15')
-        .attr('stroke', nodeColor)
+        .attr('fill', '#f1f5f9')
+        .attr('stroke', '#3b82f6')
         .attr('stroke-width', 1.5);
 
       g.append('text')
         .attr('x', 90)
         .attr('y', 18)
         .attr('text-anchor', 'middle')
-        .attr('fill', 'white')
+        .attr('fill', '#1e293b')
         .attr('font-size', '10px')
         .text(node.name.length > 24 ? node.name.substring(0, 22) + '...' : node.name);
     });
@@ -214,31 +253,68 @@ const AnimatedChordDiagram = ({ onCategoryClick, onDepartmentClick, selectedLeve
   };
 
   return (
-    <div className="bg-slate-800 rounded-xl p-4 border border-slate-700">
-      <div className="flex justify-between items-center mb-4">
+    <div className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm">
+      <div className="flex justify-between items-start mb-4">
         <div>
-          <h3 className="text-white font-semibold">Medicine Category to Department Flow</h3>
+          <h3 className="text-slate-800 font-semibold">Medicine Category to Department Flow</h3>
           <div className="flex items-center gap-2 mt-1">
             {getBreadcrumb().map((part, i) => (
               <React.Fragment key={i}>
-                {i > 0 && <span className="text-slate-500">›</span>}
-                <span className={`text-xs ${i === getBreadcrumb().length - 1 ? 'text-blue-400' : 'text-slate-400'}`}>
+                {i > 0 && <span className="text-slate-400">›</span>}
+                <span className={`text-xs ${i === getBreadcrumb().length - 1 ? 'text-blue-600' : 'text-slate-500'}`}>
                   {part}
                 </span>
               </React.Fragment>
             ))}
           </div>
         </div>
-        {(selectedL1 || selectedL2) && (
-          <button
-            onClick={handleBack}
-            className="px-3 py-1.5 bg-slate-700 text-white text-sm rounded-lg hover:bg-slate-600 transition-colors"
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3">
+            {movementLabels.map((item) => (
+              <div key={item.type} className="flex items-center gap-1.5">
+                <div 
+                  className="w-3 h-3 rounded-full"
+                  style={{ backgroundColor: item.color }}
+                />
+                <span className="text-xs text-slate-600">{item.label}</span>
+              </div>
+            ))}
+          </div>
+          {(selectedL1 || selectedL2) && (
+            <button
+              onClick={handleBack}
+              className="px-3 py-1.5 bg-slate-100 text-slate-700 text-sm rounded-lg hover:bg-slate-200 transition-colors border border-slate-200"
+            >
+              ← Back
+            </button>
+          )}
+        </div>
+      </div>
+      <div className="relative">
+        <svg ref={svgRef} className="w-full" style={{ height: '400px' }} />
+        {tooltipInfo && (
+          <div 
+            className="absolute bg-white border border-slate-200 rounded-lg shadow-lg p-3 z-10 pointer-events-none"
+            style={{ left: tooltipInfo.x, top: tooltipInfo.y }}
           >
-            ← Back
-          </button>
+            <div className="text-xs text-slate-500 mb-1">Flow Details</div>
+            <div className="text-sm font-medium text-slate-800">{tooltipInfo.source}</div>
+            <div className="text-xs text-slate-400 my-1">→</div>
+            <div className="text-sm font-medium text-slate-800">{tooltipInfo.target}</div>
+            <div className="flex items-center gap-2 mt-2 pt-2 border-t border-slate-100">
+              <div 
+                className="w-2 h-2 rounded-full"
+                style={{ backgroundColor: movementColors[tooltipInfo.type] }}
+              />
+              <span className="text-xs text-slate-600">{tooltipInfo.quantity} units</span>
+              <span className="text-xs text-slate-400">•</span>
+              <span className="text-xs capitalize" style={{ color: movementColors[tooltipInfo.type] }}>
+                {tooltipInfo.type.replace('-', ' ')}
+              </span>
+            </div>
+          </div>
         )}
       </div>
-      <svg ref={svgRef} className="w-full" style={{ height: '400px' }} />
     </div>
   );
 };

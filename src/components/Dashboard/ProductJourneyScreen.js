@@ -1,35 +1,62 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Heart, AlertTriangle, Pill, Scissors } from 'lucide-react';
-import { productJourneyData } from '../../data/unifiedPharmaData';
+import { ArrowLeft, Heart, AlertTriangle, Pill, Scissors, Building2, Sun } from 'lucide-react';
+import { productJourneyData, medicineCategories } from '../../data/unifiedPharmaData';
 
 const ProductJourneyScreen = ({ category, onBack }) => {
-  const initialCategory = () => {
-    if (category?.name) {
-      const categoryMap = {
-        'Emergency Medicines': 'Emergency',
-        'OT Medicines': 'Surgical',
-        'Ward Medicines': 'Antibiotics',
-        'Daycare Medicines': 'Cardiac',
-        'General Medicines': 'Antibiotics',
-        'Implant Medicines': 'Cardiac'
-      };
-      return categoryMap[category.name] || productJourneyData.categories[0];
-    }
-    return productJourneyData.categories[0];
+  const getCategoryById = (catId) => {
+    return medicineCategories.find(c => c.id === catId) || medicineCategories[0];
   };
   
-  const [selectedProduct, setSelectedProduct] = useState(initialCategory());
+  const initialCategoryId = () => {
+    if (category?.id) {
+      return category.id;
+    }
+    if (category?.name) {
+      const found = medicineCategories.find(c => c.name === category.name);
+      return found ? found.id : medicineCategories[0].id;
+    }
+    return medicineCategories[0].id;
+  };
+  
+  const [selectedCategoryId, setSelectedCategoryId] = useState(initialCategoryId());
   const canvasRef = useRef(null);
   const animationRef = useRef(null);
   const particlesRef = useRef([]);
 
-  const currentProduct = productJourneyData.products[selectedProduct];
+  const selectedCategory = getCategoryById(selectedCategoryId);
+  
+  const getProductData = () => {
+    const cat = selectedCategory;
+    const totalUnits = cat.itemCount;
+    const icuPct = 0.12, emergencyPct = 0.22, generalPct = 0.28, otPct = 0.20, pharmacyPct = 0.18;
+    return {
+      name: cat.name.replace(' Medicines', ''),
+      totalUnits: totalUnits,
+      distribution: [
+        { name: 'ICU', units: Math.round(totalUnits * icuPct), color: '#ef4444', type: 'critical' },
+        { name: 'Emergency Ward', units: Math.round(totalUnits * emergencyPct), color: '#ef4444', type: 'critical' },
+        { name: 'General Ward', units: Math.round(totalUnits * generalPct), color: '#10b981', type: 'normal' },
+        { name: 'Operation Theater', units: Math.round(totalUnits * otPct), color: '#3b82f6', type: 'routine' },
+        { name: 'Pharmacy Store', units: Math.round(totalUnits * pharmacyPct), color: '#3b82f6', type: 'routine' }
+      ],
+      consumption: [
+        { name: 'Patient Care', rate: Math.round(totalUnits * 0.008), unit: '/hr' },
+        { name: 'Procedures', rate: Math.round(totalUnits * 0.005), unit: '/hr' },
+        { name: 'Outpatient', rate: Math.round(totalUnits * 0.004), unit: '/hr' },
+        { name: 'Research', rate: Math.round(totalUnits * 0.002), unit: '/hr' }
+      ]
+    };
+  };
+  
+  const currentProduct = getProductData();
 
   const categoryIcons = {
-    Cardiac: Heart,
-    Emergency: AlertTriangle,
-    Antibiotics: Pill,
-    Surgical: Scissors
+    emergency: AlertTriangle,
+    ot: Scissors,
+    ward: Building2,
+    daycare: Sun,
+    general: Pill,
+    implant: Heart
   };
 
   useEffect(() => {
@@ -119,17 +146,17 @@ const ProductJourneyScreen = ({ category, onBack }) => {
     });
 
     const animate = () => {
-      ctx.fillStyle = '#1e293b';
+      ctx.fillStyle = '#f1f5f9';
       ctx.fillRect(0, 0, width, height);
 
       ctx.font = '12px Inter, sans-serif';
-      ctx.fillStyle = '#64748b';
+      ctx.fillStyle = '#475569';
       ctx.textAlign = 'center';
       ctx.fillText('SOURCE', sourceX, 30);
       ctx.fillText('DISTRIBUTION', distributionX, 30);
       ctx.fillText('CONSUMPTION', consumptionX, 30);
 
-      ctx.strokeStyle = '#334155';
+      ctx.strokeStyle = '#cbd5e1';
       ctx.setLineDash([5, 5]);
       ctx.beginPath();
       ctx.moveTo(sourceX + 80, 40);
@@ -189,7 +216,7 @@ const ProductJourneyScreen = ({ category, onBack }) => {
       distributionNodes.forEach(node => {
         const isHighlight = node.type === 'critical';
         
-        ctx.fillStyle = isHighlight ? node.color + '30' : '#1e293b';
+        ctx.fillStyle = isHighlight ? node.color + '20' : '#ffffff';
         ctx.strokeStyle = node.color;
         ctx.lineWidth = isHighlight ? 3 : 2;
         
@@ -202,7 +229,7 @@ const ProductJourneyScreen = ({ category, onBack }) => {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = 'white';
+        ctx.fillStyle = '#1e293b';
         ctx.font = '11px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(node.name, node.x, node.y + 18);
@@ -212,8 +239,8 @@ const ProductJourneyScreen = ({ category, onBack }) => {
       });
 
       consumptionNodes.forEach(node => {
-        ctx.fillStyle = '#1e293b';
-        ctx.strokeStyle = '#475569';
+        ctx.fillStyle = '#ffffff';
+        ctx.strokeStyle = '#cbd5e1';
         ctx.lineWidth = 1;
         
         const boxWidth = 80;
@@ -224,7 +251,7 @@ const ProductJourneyScreen = ({ category, onBack }) => {
         ctx.fill();
         ctx.stroke();
 
-        ctx.fillStyle = '#94a3b8';
+        ctx.fillStyle = '#475569';
         ctx.font = '10px Inter, sans-serif';
         ctx.textAlign = 'center';
         ctx.fillText(node.name, node.x, node.y + 12);
@@ -248,54 +275,60 @@ const ProductJourneyScreen = ({ category, onBack }) => {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [selectedProduct, currentProduct]);
+  }, [selectedCategoryId, currentProduct]);
 
-  const Icon = categoryIcons[selectedProduct] || Heart;
+  const Icon = categoryIcons[selectedCategoryId] || Heart;
 
   return (
-    <div className="min-h-screen bg-slate-900">
-      <div className="bg-slate-800 border-b border-slate-700 px-6 py-4">
+    <div className="min-h-screen bg-slate-50">
+      <div className="bg-white border-b border-slate-200 px-6 py-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-4">
             <button
               onClick={onBack}
-              className="p-2 hover:bg-slate-700 rounded-lg transition-colors"
+              className="p-2 hover:bg-slate-100 rounded-lg transition-colors"
             >
-              <ArrowLeft className="w-5 h-5 text-slate-400" />
+              <ArrowLeft className="w-5 h-5 text-slate-600" />
             </button>
             <div>
-              <h1 className="text-xl font-bold text-white">Product Journey</h1>
-              <p className="text-sm text-slate-400">Real-time visualization of medicine distribution</p>
+              <h1 className="text-xl font-bold text-slate-800">Product Journey</h1>
+              <p className="text-sm text-slate-500">Real-time visualization of medicine distribution</p>
             </div>
+          </div>
+          <div className="flex items-center gap-2 bg-blue-50 px-3 py-1.5 rounded-lg">
+            <span className="text-blue-600 font-medium text-sm">{selectedCategory.name}</span>
+            <span className="text-blue-500 font-bold">{selectedCategory.itemCount} items</span>
           </div>
         </div>
       </div>
 
       <div className="px-6 py-4">
         <div className="flex gap-3 mb-6 overflow-x-auto pb-2">
-          {productJourneyData.categories.map((cat) => {
-            const CatIcon = categoryIcons[cat] || Heart;
-            const isSelected = selectedProduct === cat;
-            const productData = productJourneyData.products[cat];
+          {medicineCategories.map((cat) => {
+            const CatIcon = categoryIcons[cat.id] || Heart;
+            const isSelected = selectedCategoryId === cat.id;
             
             return (
               <button
-                key={cat}
-                onClick={() => setSelectedProduct(cat)}
+                key={cat.id}
+                onClick={() => setSelectedCategoryId(cat.id)}
                 className={`flex items-center gap-2 px-4 py-2.5 rounded-full whitespace-nowrap transition-all ${
                   isSelected
-                    ? 'bg-red-500/20 text-white border-2 border-red-500'
-                    : 'bg-slate-800 text-slate-300 border border-slate-600 hover:border-slate-500'
+                    ? 'bg-blue-500 text-white shadow-md'
+                    : 'bg-white text-slate-600 border border-slate-200 hover:border-slate-300 hover:bg-slate-50'
                 }`}
               >
-                <CatIcon className={`w-4 h-4 ${isSelected ? 'text-red-400' : 'text-slate-400'}`} />
-                <span className="font-medium">{cat}</span>
+                <CatIcon className={`w-4 h-4 ${isSelected ? 'text-white' : 'text-slate-400'}`} />
+                <span className="font-medium">{cat.name.replace(' Medicines', '')}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded ${isSelected ? 'bg-white/20' : 'bg-slate-100'}`}>
+                  {cat.itemCount}
+                </span>
               </button>
             );
           })}
         </div>
 
-        <div className="bg-slate-800 rounded-2xl border border-slate-700 overflow-hidden">
+        <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
           <canvas 
             ref={canvasRef} 
             className="w-full"
@@ -307,16 +340,16 @@ const ProductJourneyScreen = ({ category, onBack }) => {
           {currentProduct.distribution.map((node, index) => (
             <div 
               key={index}
-              className="bg-slate-800 rounded-xl p-4 border border-slate-700"
+              className="bg-white rounded-xl p-4 border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
             >
               <div className="flex items-center gap-2 mb-2">
                 <div 
                   className="w-3 h-3 rounded-full"
                   style={{ backgroundColor: node.color }}
                 />
-                <span className="text-slate-300 text-sm">{node.name}</span>
+                <span className="text-slate-600 text-sm">{node.name}</span>
               </div>
-              <p className="text-2xl font-bold text-white">{node.units}</p>
+              <p className="text-2xl font-bold text-slate-800">{node.units}</p>
               <p className="text-slate-400 text-xs">units allocated</p>
             </div>
           ))}

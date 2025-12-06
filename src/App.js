@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
 import Header from './components/Layout/Header';
 import NotificationPanel from './components/Layout/NotificationPanel';
 import UploadModal from './components/Layout/UploadModal';
+import ToastNotification from './components/Layout/ToastNotification';
 import MainDashboard from './components/Dashboard/MainDashboard';
 import ProductJourneyScreen from './components/Dashboard/ProductJourneyScreen';
 import RCAScreen from './components/Dashboard/RCAScreen';
@@ -21,10 +22,26 @@ function App() {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [isNotificationOpen, setIsNotificationOpen] = useState(false);
   const [isUploadOpen, setIsUploadOpen] = useState(false);
+  
+  const [toasts, setToasts] = useState([]);
+
+  const loginToasts = [
+    { id: 1, type: 'critical', title: 'Critical Stockout Alert', message: '35 products are currently stocked out', duration: 5000 },
+    { id: 2, type: 'warning', title: 'Low Stock Warning', message: '48 products below reorder point', duration: 6000 },
+    { id: 3, type: 'warning', title: 'Expiry Alert', message: '12 products expiring within 30 days', duration: 7000 },
+    { id: 4, type: 'info', title: 'OTIF Update', message: 'OTIF score improved to 92.4%', duration: 8000 },
+    { id: 5, type: 'success', title: 'Forecast Synced', message: 'Latest forecast data synchronized', duration: 9000 }
+  ];
 
   const handleLogin = (user) => {
     setCurrentUser(user);
     setIsAuthenticated(true);
+    
+    loginToasts.forEach((toast, index) => {
+      setTimeout(() => {
+        setToasts(prev => [...prev, { ...toast, id: Date.now() + index }]);
+      }, index * 800);
+    });
   };
 
   const handleSignup = (user) => {
@@ -37,6 +54,7 @@ function App() {
     setIsAuthenticated(false);
     setAuthView('login');
     setCurrentScreen('dashboard');
+    setToasts([]);
   };
 
   const handleNavigateToRCA = (data) => {
@@ -74,6 +92,10 @@ function App() {
     setNotifications(prev => [newNotification, ...prev]);
   };
 
+  const handleDismissToast = (id) => {
+    setToasts(prev => prev.filter(t => t.id !== id));
+  };
+
   if (!isAuthenticated) {
     if (authView === 'login') {
       return (
@@ -93,24 +115,30 @@ function App() {
 
   if (currentScreen === 'product-journey') {
     return (
-      <ProductJourneyScreen 
-        category={selectedCategory}
-        onBack={handleBackToDashboard}
-      />
+      <>
+        <ProductJourneyScreen 
+          category={selectedCategory}
+          onBack={handleBackToDashboard}
+        />
+        <ToastNotification toasts={toasts} onDismiss={handleDismissToast} />
+      </>
     );
   }
 
   if (currentScreen === 'rca') {
     return (
-      <RCAScreen 
-        data={rcaData}
-        onBack={handleBackToDashboard}
-      />
+      <>
+        <RCAScreen 
+          data={rcaData}
+          onBack={handleBackToDashboard}
+        />
+        <ToastNotification toasts={toasts} onDismiss={handleDismissToast} />
+      </>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-900">
+    <div className="min-h-screen bg-slate-50">
       <Header 
         currentUser={currentUser}
         notifications={notifications}
@@ -142,6 +170,8 @@ function App() {
         onClose={() => setIsUploadOpen(false)}
         onUploadComplete={handleUploadComplete}
       />
+
+      <ToastNotification toasts={toasts} onDismiss={handleDismissToast} />
     </div>
   );
 }
